@@ -1,0 +1,175 @@
+# Sending Emails
+
+## Fluent API
+
+The `Mail.to()` method returns a `MessageBuilder` with chainable methods:
+
+```typescript
+const result = await Mail.to('user@example.com')
+  .subject('Hello')
+  .html('<h1>Hello!</h1>')
+  .send();
+```
+
+### Chainable Methods
+
+| Method | Signature | Description |
+|--------|-----------|-------------|
+| `to()` | `Mail.to(address: string \| string[])` | Start building an email (entry point) |
+| `subject()` | `.subject(subject: string)` | Set the email subject |
+| `html()` | `.html(html: string)` | Set HTML body content |
+| `text()` | `.text(text: string)` | Set plain text body content |
+| `from()` | `.from(from: string)` | Override the default sender address |
+| `cc()` | `.cc(cc: string \| string[])` | Add CC recipients |
+| `bcc()` | `.bcc(bcc: string \| string[])` | Add BCC recipients |
+| `replyTo()` | `.replyTo(replyTo: string)` | Set reply-to address |
+| `attachments()` | `.attachments(attachments: Attachment[])` | Add file attachments |
+| `headers()` | `.headers(headers: Record<string, string>)` | Set custom email headers |
+| `template()` | `.template(template: string)` | Use a template file (requires template engine) |
+| `data()` | `.data(data: Record<string, unknown>)` | Pass data to the template |
+| `send()` | `.send(mailable?: Mailable): Promise<MailResponse>` | Send the email |
+| `queue()` | `.queue(mailable?: Mailable): Promise<QueueJobResult>` | Queue for background sending |
+| `later()` | `.later(delaySeconds: number, mailable?: Mailable): Promise<QueueJobResult>` | Queue with delay |
+| `at()` | `.at(date: Date, mailable?: Mailable): Promise<QueueJobResult>` | Schedule for a specific time |
+
+## Mailable Classes
+
+Create reusable email definitions by extending the abstract `Mailable` class:
+
+```typescript
+import { Mailable } from '@impruthvi/nodemail';
+
+class OrderConfirmation extends Mailable {
+  constructor(
+    private order: { id: string; total: number },
+    private customerName: string
+  ) {
+    super();
+  }
+
+  build() {
+    return this
+      .subject(`Order #${this.order.id} Confirmed`)
+      .from('orders@example.com')
+      .html(`<h1>Thank you, ${this.customerName}!</h1>
+             <p>Your order #${this.order.id} totaling $${this.order.total} is confirmed.</p>`)
+      .cc('orders-archive@example.com')
+      .replyTo('support@example.com')
+      .attach('./invoices/invoice.pdf', 'invoice.pdf')
+      .withHeaders({ 'X-Order-Id': this.order.id });
+  }
+}
+```
+
+### Protected Methods in Mailable
+
+| Method | Signature | Description |
+|--------|-----------|-------------|
+| `build()` | `abstract build(): this` | Define email content (must override) |
+| `from()` | `protected from(from: string): this` | Set sender address |
+| `subject()` | `protected subject(subject: string): this` | Set subject line |
+| `html()` | `protected html(html: string): this` | Set HTML content |
+| `text()` | `protected text(text: string): this` | Set plain text content |
+| `view()` | `protected view(template: string, data?: Record<string, unknown>): this` | Use a template with data |
+| `cc()` | `protected cc(cc: string \| string[]): this` | Add CC recipients |
+| `bcc()` | `protected bcc(bcc: string \| string[]): this` | Add BCC recipients |
+| `replyTo()` | `protected replyTo(replyTo: string): this` | Set reply-to address |
+| `attach()` | `protected attach(path: string, filename?: string): this` | Add an attachment |
+| `withHeaders()` | `protected withHeaders(headers: Record<string, string>): this` | Set custom headers |
+
+### Public Methods in Mailable
+
+| Method | Signature | Description |
+|--------|-----------|-------------|
+| `to()` | `to(recipients: string \| string[]): this` | Set recipients |
+| `setMailManager()` | `setMailManager(manager: MailManager): this` | Set the mail manager (internal) |
+| `send()` | `send(): Promise<MailResponse>` | Send the email directly |
+| `getMailOptions()` | `getMailOptions(): Partial<MailOptions>` | Get the built options (calls `build()`) |
+
+## Sending Patterns
+
+**Pattern 1: Fluent API with inline content**
+
+```typescript
+await Mail.to('user@example.com')
+  .subject('Hello')
+  .html('<h1>Hello!</h1>')
+  .send();
+```
+
+**Pattern 2: Fluent API with Mailable**
+
+```typescript
+await Mail.to('user@example.com').send(new WelcomeEmail(user));
+```
+
+**Pattern 3: Direct send via `Mail.send()`**
+
+```typescript
+const email = new WelcomeEmail(user);
+email.to('user@example.com');
+await Mail.send(email);
+```
+
+**Pattern 4: Mailable self-send**
+
+```typescript
+const email = new WelcomeEmail(user);
+email.to('user@example.com');
+email.setMailManager(mailManager);
+await email.send();
+```
+
+## Switching Mailers
+
+Use `Mail.mailer()` to get a `MailManager` instance configured for a specific provider:
+
+```typescript
+// Send via SendGrid instead of the default mailer
+const sendgridManager = Mail.mailer('sendgrid');
+await sendgridManager.to('user@example.com')
+  .subject('Hello via SendGrid')
+  .html('<h1>Hello!</h1>')
+  .send();
+```
+
+## `Message` Class (Low-Level Builder)
+
+The `Message` class is a standalone message builder that can be used independently of the `Mail` facade:
+
+```typescript
+import { Message } from '@impruthvi/nodemail';
+
+const message = new Message();
+message
+  .to('user@example.com')
+  .from('sender@example.com')
+  .subject('Hello')
+  .html('<h1>Hello!</h1>')
+  .text('Hello!')
+  .cc('cc@example.com')
+  .bcc('bcc@example.com')
+  .replyTo('reply@example.com')
+  .attach({ filename: 'file.pdf', path: './file.pdf' })
+  .header('X-Custom', 'value')
+  .template('welcome', { name: 'John' });
+
+const options = message.toOptions(); // Get the built MailOptions
+```
+
+### `Message` Methods
+
+| Method | Signature | Description |
+|--------|-----------|-------------|
+| `to()` | `to(address: string \| string[] \| MailAddress \| MailAddress[]): this` | Set recipients |
+| `from()` | `from(address: string \| MailAddress): this` | Set sender |
+| `subject()` | `subject(subject: string): this` | Set subject |
+| `html()` | `html(html: string): this` | Set HTML content |
+| `text()` | `text(text: string): this` | Set plain text content |
+| `cc()` | `cc(address: string \| string[] \| MailAddress \| MailAddress[]): this` | Add CC recipients |
+| `bcc()` | `bcc(address: string \| string[] \| MailAddress \| MailAddress[]): this` | Add BCC recipients |
+| `replyTo()` | `replyTo(address: string \| MailAddress): this` | Set reply-to address |
+| `attach()` | `attach(attachment: Attachment): this` | Add an attachment |
+| `header()` | `header(name: string, value: string): this` | Add a custom header |
+| `template()` | `template(name: string, data: Record<string, unknown>): this` | Set template and data |
+| `toOptions()` | `toOptions(): Partial<MailOptions>` | Get the built message options |

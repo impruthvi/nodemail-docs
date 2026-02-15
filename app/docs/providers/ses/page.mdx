@@ -1,0 +1,26 @@
+# AWS SES Provider
+
+The AWS SES provider sends emails through Amazon Simple Email Service using the official AWS SDK v3.
+
+## Installation
+
+<PackageManagerTabs command="@aws-sdk/client-ses" />
+
+## Configuration
+
+```typescript
+Mail.configure({
+  default: 'ses',
+  from: { address: 'noreply@example.com', name: 'My App' },
+  mailers: {
+    ses: {
+      driver: 'ses',
+      region: 'us-east-1',
+      accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+    },
+  },
+});
+```
+
+> **Note:** If `accessKeyId` and `secretAccessKey` are omitted, the AWS SDK will use the default credential chain (IAM roles, environment variables, shared credentials file, etc.).

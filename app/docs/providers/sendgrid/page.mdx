@@ -1,0 +1,22 @@
+# SendGrid Provider
+
+The SendGrid provider sends emails through the SendGrid API using the official `@sendgrid/mail` package.
+
+## Installation
+
+<PackageManagerTabs command="@sendgrid/mail" />
+
+## Configuration
+
+```typescript
+Mail.configure({
+  default: 'sendgrid',
+  from: { address: 'noreply@example.com', name: 'My App' },
+  mailers: {
+    sendgrid: {
+      driver: 'sendgrid',
+      apiKey: process.env.SENDGRID_API_KEY!,
+    },
+  },
+});
+```

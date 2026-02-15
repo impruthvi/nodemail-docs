@@ -1,0 +1,124 @@
+# Troubleshooting / FAQ
+
+## Common Errors
+
+### "Mail not configured. Call Mail.configure() before using Mail facade."
+
+You must call `Mail.configure()` before using any `Mail.*` methods:
+
+```typescript
+Mail.configure({
+  default: 'smtp',
+  from: { address: 'noreply@example.com', name: 'App' },
+  mailers: {
+    smtp: { driver: 'smtp', host: 'localhost', port: 587 },
+  },
+});
+```
+
+### "SendGrid provider requires @sendgrid/mail package"
+
+Install the peer dependency for the provider you are using:
+
+<PackageManagerTabs command="@sendgrid/mail" label="SendGrid" />
+
+<PackageManagerTabs command="@aws-sdk/client-ses" label="AWS SES" />
+
+<PackageManagerTabs command="mailgun.js form-data" label="Mailgun" />
+
+<PackageManagerTabs command="resend" label="Resend" />
+
+<PackageManagerTabs command="postmark" label="Postmark" />
+
+### "Handlebars is not installed" / "EJS is not installed" / "Pug is not installed"
+
+Install the template engine you configured:
+
+<PackageManagerTabs command="handlebars" label="for engine: 'handlebars'" />
+
+<PackageManagerTabs command="ejs" label="for engine: 'ejs'" />
+
+<PackageManagerTabs command="pug" label="for engine: 'pug'" />
+
+### "marked is not installed" / "juice is not installed"
+
+Markdown Mail requires both `marked` and `juice`:
+
+<PackageManagerTabs command="marked juice" />
+
+### "Queue not configured. Add queue configuration to Mail.configure()"
+
+Add a `queue` section to your configuration:
+
+```typescript
+Mail.configure({
+  // ...
+  queue: {
+    driver: 'bullmq',
+    connection: { host: 'localhost', port: 6379 },
+  },
+});
+```
+
+### "BullMQ is not installed" / "Bull is not installed"
+
+Install the queue driver you configured:
+
+<PackageManagerTabs command="bullmq ioredis" label="for driver: 'bullmq'" />
+
+<PackageManagerTabs command="bull" label="for driver: 'bull'" />
+
+### "Mailer 'xxx' is not configured"
+
+The mailer name you are using does not exist in your configuration. Check that the name matches a key in your `mailers` object:
+
+```typescript
+Mail.configure({
+  mailers: {
+    smtp: { ... },      // Mail.mailer('smtp') works
+    sendgrid: { ... },  // Mail.mailer('sendgrid') works
+  },
+});
+
+Mail.mailer('resend'); // Error: not configured
+```
+
+### "Mail::fake() must be called before using assertions."
+
+Call `Mail.fake()` before using any assertion methods:
+
+```typescript
+Mail.fake(); // Must be called first
+
+await Mail.to('user@example.com').send(new WelcomeEmail('John'));
+
+Mail.assertSent(WelcomeEmail); // Now this works
+```
+
+## Peer Dependency Guidance
+
+The package uses peer dependencies to keep the base installation lightweight. Only install what you need:
+
+| Feature | Required Packages |
+|---------|-------------------|
+| SMTP | *(included)* |
+| SendGrid | `@sendgrid/mail` |
+| AWS SES | `@aws-sdk/client-ses` |
+| Mailgun | `mailgun.js`, `form-data` |
+| Resend | `resend` |
+| Postmark | `postmark` |
+| Handlebars templates | `handlebars` |
+| EJS templates | `ejs` |
+| Pug templates | `pug` |
+| Markdown Mail | `marked`, `juice` |
+| BullMQ queue | `bullmq`, `ioredis` |
+| Bull queue | `bull` |
+
+## Best Practices
+
+1. **Use environment variables** for all API keys and credentials.
+2. **Configure failover** in production for reliability.
+3. **Use `Mail.fake()` in tests** to avoid sending real emails.
+4. **Use the sync queue driver** in development/testing, BullMQ in production.
+5. **Enable template caching** in production for better performance.
+6. **Use Mailable classes** for reusable, testable email definitions.

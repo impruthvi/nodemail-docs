@@ -1,0 +1,278 @@
+# Examples
+
+## All 6 Providers
+
+```typescript
+// SMTP
+Mail.configure({
+  default: 'smtp',
+  from: { address: 'noreply@example.com', name: 'App' },
+  mailers: {
+    smtp: { driver: 'smtp', host: 'smtp.example.com', port: 587, auth: { user: 'u', pass: 'p' } },
+  },
+});
+
+// SendGrid
+Mail.configure({
+  default: 'sendgrid',
+  from: { address: 'noreply@example.com', name: 'App' },
+  mailers: {
+    sendgrid: { driver: 'sendgrid', apiKey: 'SG.xxx' },
+  },
+});
+
+// AWS SES
+Mail.configure({
+  default: 'ses',
+  from: { address: 'noreply@example.com', name: 'App' },
+  mailers: {
+    ses: { driver: 'ses', region: 'us-east-1' },
+  },
+});
+
+// Mailgun
+Mail.configure({
+  default: 'mailgun',
+  from: { address: 'noreply@example.com', name: 'App' },
+  mailers: {
+    mailgun: { driver: 'mailgun', domain: 'mg.example.com', apiKey: 'key-xxx', region: 'us' },
+  },
+});
+
+// Resend
+Mail.configure({
+  default: 'resend',
+  from: { address: 'noreply@example.com', name: 'App' },
+  mailers: {
+    resend: { driver: 'resend', apiKey: 're_xxx' },
+  },
+});
+
+// Postmark
+Mail.configure({
+  default: 'postmark',
+  from: { address: 'noreply@example.com', name: 'App' },
+  mailers: {
+    postmark: { driver: 'postmark', serverToken: 'xxx-xxx' },
+  },
+});
+```
+
+## Template Engines
+
+**Handlebars template** (`views/emails/welcome.hbs`):
+
+```handlebars
+<html>
+<body>
+    <h1>Welcome, {{name}}!</h1>
+    <p>Thank you for joining {{appName}}.</p>
+    <ul>
+        <li><strong>Email:</strong> {{email}}</li>
+        <li><strong>Member since:</strong> {{joinDate}}</li>
+    </ul>
+</body>
+</html>
+```
+
+**EJS template** (`views/emails/invoice.ejs`):
+
+```ejs
+<!DOCTYPE html>
+<html>
+<body>
+    <h1>Invoice #<%= invoiceNumber %></h1>
+    <p>Dear <%= customerName %>,</p>
+    <table>
+        <tr><th>Item</th><th>Qty</th><th>Price</th></tr>
+        <% items.forEach(function(item) { %>
+        <tr>
+            <td><%= item.name %></td>
+            <td><%= item.quantity %></td>
+            <td>$<%= item.price %></td>
+        </tr>
+        <% }); %>
+    </table>
+    <p><strong>Total: $<%= total %></strong></p>
+</body>
+</html>
+```
+
+**Pug template** (`views/emails/notification.pug`):
+
+```pug
+doctype html
+html
+  head
+    title= title
+  body
+    h1= message
+    p Dear #{username},
+    p This is a notification about your account activity.
+    if urgent
+      p.alert This requires immediate attention!
+    ul
+      each item in items
+        li= item
+    p Sent at: #{timestamp}
+```
+
+## Mailable Class Patterns
+
+```typescript
+// Simple mailable with inline HTML
+class SimpleEmail extends Mailable {
+  build() {
+    return this.subject('Hello').html('<h1>Hello!</h1>');
+  }
+}
+
+// Mailable with template
+class TemplateEmail extends Mailable {
+  constructor(private data: Record<string, unknown>) { super(); }
+  build() {
+    return this.subject('Welcome').view('welcome', this.data);
+  }
+}
+
+// Mailable with all options
+class FullEmail extends Mailable {
+  build() {
+    return this
+      .from('sender@example.com')
+      .subject('Full Example')
+      .html('<h1>Hello!</h1>')
+      .text('Hello!')
+      .cc('cc@example.com')
+      .bcc('bcc@example.com')
+      .replyTo('reply@example.com')
+      .attach('./file.pdf', 'document.pdf')
+      .withHeaders({ 'X-Custom': 'value' });
+  }
+}
+```
+
+## Markdown Mail with Components
+
+```typescript
+class NewsletterEmail extends MarkdownMailable {
+  constructor(private articles: { title: string; url: string }[]) {
+    super();
+  }
+
+  build(): this {
+    const articleList = this.articles
+      .map(a => `- [${a.title}](${a.url})`)
+      .join('\n');
+
+    return this
+      .subject('Weekly Newsletter')
+      .from('newsletter@example.com')
+      .markdown(`# Weekly Newsletter
+
+Here are this week's top articles:
+
+${articleList}
+
+[button url="https://example.com/archive" color="primary"]View All Articles[/button]
+
+[panel]
+You're receiving this because you subscribed to our newsletter.
+[Unsubscribe](https://example.com/unsubscribe)
+[/panel]
+
+[table]
+| Category | Count |
+|----------|-------|
+| Tech     | 5     |
+| Science  | 3     |
+[/table]`);
+  }
+}
+```
+
+## Queue Patterns
+
+```typescript
+// Immediate queue
+await Mail.to('user@example.com').queue(new WelcomeEmail(user));
+
+// Delayed (send in 5 minutes)
+await Mail.to('user@example.com').later(300, new FollowUpEmail(user));
+
+// Scheduled (send at specific time)
+const sendAt = new Date('2026-12-25T09:00:00');
+await Mail.to('user@example.com').at(sendAt, new ChristmasEmail());
+
+// Via facade
+await Mail.queue(new WelcomeEmail(user));
+await Mail.later(new FollowUpEmail(user), 300);
+await Mail.at(new ChristmasEmail(), sendAt);
+
+// Process queued emails (worker)
+await Mail.processQueue();
+```
+
+## Failover Configuration
+
+```typescript
+Mail.configure({
+  default: 'smtp',
+  from: { address: 'noreply@example.com', name: 'My App' },
+  mailers: {
+    smtp: { driver: 'smtp', host: 'smtp.example.com', port: 587, auth: { user: 'u', pass: 'p' } },
+    sendgrid: { driver: 'sendgrid', apiKey: 'SG.xxx' },
+    ses: { driver: 'ses', region: 'us-east-1' },
+  },
+  failover: {
+    chain: ['sendgrid', 'ses'],
+    maxRetriesPerProvider: 2,
+    retryDelay: 1000,
+    failoverDelay: 500,
+    onFailover: (event) => {
+      console.log(`[Failover] ${event.failedMailer} failed → trying ${event.nextMailer}`);
+    },
+  },
+});
+```
+
+## Testing Workflow
+
+```typescript
+import { Mail, Mailable, MarkdownMailable } from '@impruthvi/nodemail';
+
+class OrderEmail extends Mailable {
+  constructor(private orderId: string) { super(); }
+  build() {
+    return this.subject(`Order #${this.orderId}`).html(`<p>Order confirmed</p>`);
+  }
+}
+
+describe('Order System', () => {
+  beforeEach(() => Mail.fake());
+  afterEach(() => Mail.restore());
+
+  it('sends order confirmation', async () => {
+    await Mail.to('customer@example.com').send(new OrderEmail('123'));
+
+    Mail.assertSent(OrderEmail);
+    Mail.assertSent(OrderEmail, (m) =>
+      m.hasTo('customer@example.com') &&
+      m.hasSubject('Order #123') &&
+      m.htmlContains('Order confirmed')
+    );
+  });
+
+  it('queues order for background sending', async () => {
+    await Mail.to('customer@example.com').queue(new OrderEmail('456'));
+
+    Mail.assertQueued(OrderEmail);
+    Mail.assertNothingSent();
+  });
+
+  it('handles no emails sent', async () => {
+    Mail.assertNothingSent();
+    Mail.assertNothingQueued();
+  });
+});
+```

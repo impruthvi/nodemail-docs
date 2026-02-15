@@ -1,0 +1,36 @@
+# Migration Guide
+
+## v0.7.0 to v1.0.0
+
+**No breaking changes.** v1.0.0 adds provider failover support as an additive feature.
+
+**New features:**
+
+- `FailoverManager` class
+- `failover` config option (global and per-mailer)
+- `onFailover` callback
+- `MailResponse` now includes `provider`, `failoverUsed`, `failoverAttempts`
+- `MailFake.simulateFailures()` / `resetFailures()` for testing failover
+- `AssertableMessage` failover methods: `wasFailoverUsed()`, `getProvider()`, `getFailoverAttempts()`, `getResponse()`
+
+### To adopt failover
+
+```typescript
+Mail.configure({
+  // ... existing config
+  failover: {
+    chain: ['sendgrid', 'ses'],
+    maxRetriesPerProvider: 2,
+  },
+});
+```
+
+## Version History
+
+| Version | Release | Key Feature |
+|---------|---------|-------------|
+| v0.4.0 | Phase 4 | Template engines (Handlebars, EJS, Pug) + Mailable classes |
+| v0.5.0 | Phase 5 | Testing utilities (`Mail.fake()`, assertions, `AssertableMessage`) |
+| v0.6.0 | Phase 6 | Queue support (Bull, BullMQ, sync driver) |
+| v0.7.0 | Phase 7 | Markdown Mail (renderer, components, themes) |
+| v1.0.0 | Phase 8 | Provider failover (chain, retries, delays, callbacks) |

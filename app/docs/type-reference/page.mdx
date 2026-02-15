@@ -1,0 +1,398 @@
+# Type Reference
+
+All types are exported from `@impruthvi/nodemail` and can be imported directly:
+
+```typescript
+import type {
+  MailConfig,
+  MailerConfig,
+  SmtpConfig,
+  SendGridConfig,
+  SesConfig,
+  MailgunConfig,
+  ResendConfig,
+  PostmarkConfig,
+  MailtrapConfig,
+  MailAddress,
+  Attachment,
+  MailOptions,
+  MailProvider,
+  MailResponse,
+  FailoverConfig,
+  FailoverEvent,
+  FailoverDetail,
+  QueueConfig,
+  RedisConnectionConfig,
+  BackoffConfig,
+  QueuedMailJob,
+  QueueJobResult,
+  QueueDriver,
+  TemplateConfig,
+  TemplateEngine,
+  TemplateEngineOptions,
+  MarkdownConfig,
+  MarkdownTheme,
+  MarkdownRendererOptions,
+  SentMessage,
+} from '@impruthvi/nodemail';
+```
+
+## Core Types
+
+### `MailAddress`
+
+```typescript
+interface MailAddress {
+  address: string;     // Email address
+  name?: string;       // Display name
+}
+```
+
+### `Attachment`
+
+```typescript
+interface Attachment {
+  filename: string;         // Display filename
+  content?: Buffer | string; // File content (buffer or string)
+  path?: string;            // File path (alternative to content)
+  contentType?: string;     // MIME type
+  cid?: string;             // Content ID for inline attachments
+}
+```
+
+### `MailOptions`
+
+```typescript
+interface MailOptions {
+  to: string | string[] | MailAddress | MailAddress[];
+  from?: string | MailAddress;
+  subject: string;
+  html?: string;
+  text?: string;
+  cc?: string | string[] | MailAddress | MailAddress[];
+  bcc?: string | string[] | MailAddress | MailAddress[];
+  replyTo?: string | MailAddress;
+  attachments?: Attachment[];
+  headers?: Record<string, string>;
+  template?: string;
+  data?: Record<string, unknown>;
+}
+```
+
+### `MailProvider`
+
+```typescript
+interface MailProvider {
+  send(options: MailOptions): Promise<MailResponse>;
+}
+```
+
+### `MailResponse`
+
+```typescript
+interface MailResponse {
+  success: boolean;
+  messageId?: string;
+  accepted?: string[];
+  rejected?: string[];
+  response?: string;
+  error?: string;
+  provider?: string;
+  failoverUsed?: boolean;
+  failoverAttempts?: FailoverDetail[];
+}
+```
+
+## Configuration Types
+
+### `MailConfig`
+
+```typescript
+interface MailConfig {
+  default: string;
+  from: { address: string; name: string };
+  mailers: Record<string, MailerConfig>;
+  templates?: TemplateConfig;
+  queue?: QueueConfig;
+  markdown?: MarkdownConfig;
+  failover?: FailoverConfig;
+}
+```
+
+### `MailerConfig`
+
+```typescript
+interface MailerConfig {
+  driver: 'smtp' | 'sendgrid' | 'ses' | 'mailgun' | 'resend' | 'postmark' | 'mailtrap';
+  failover?: FailoverConfig;
+  [key: string]: unknown;
+}
+```
+
+### `SmtpConfig`
+
+```typescript
+interface SmtpConfig extends MailerConfig {
+  driver: 'smtp';
+  host: string;
+  port: number;
+  username?: string;
+  password?: string;
+  encryption?: 'tls' | 'ssl';
+  secure?: boolean;
+  auth?: { user: string; pass: string };
+  options?: Record<string, unknown>;
+}
+```
+
+### `SendGridConfig`
+
+```typescript
+interface SendGridConfig extends MailerConfig {
+  driver: 'sendgrid';
+  apiKey: string;
+}
+```
+
+### `SesConfig`
+
+```typescript
+interface SesConfig extends MailerConfig {
+  driver: 'ses';
+  region: string;
+  accessKeyId?: string;
+  secretAccessKey?: string;
+}
+```
+
+### `MailgunConfig`
+
+```typescript
+interface MailgunConfig extends MailerConfig {
+  driver: 'mailgun';
+  domain: string;
+  apiKey: string;
+  region?: 'us' | 'eu';
+}
+```
+
+### `ResendConfig`
+
+```typescript
+interface ResendConfig extends MailerConfig {
+  driver: 'resend';
+  apiKey: string;
+}
+```
+
+### `PostmarkConfig`
+
+```typescript
+interface PostmarkConfig extends MailerConfig {
+  driver: 'postmark';
+  serverToken: string;
+}
+```
+
+### `MailtrapConfig`
+
+```typescript
+interface MailtrapConfig extends MailerConfig {
+  driver: 'mailtrap';
+  token: string;
+  inboxId: string;
+}
+```
+
+### `TemplateConfig`
+
+```typescript
+interface TemplateConfig {
+  engine?: 'handlebars' | 'ejs' | 'pug' | TemplateEngine;
+  viewsPath?: string;
+  extension?: string;
+  cache?: boolean;
+  options?: Record<string, unknown>;
+}
+```
+
+### `TemplateEngine`
+
+```typescript
+interface TemplateEngine {
+  render(template: string, data?: Record<string, unknown>): Promise<string>;
+  renderFile(filePath: string, data?: Record<string, unknown>): Promise<string>;
+  compile(template: string): (data?: Record<string, unknown>) => string;
+}
+```
+
+### `TemplateEngineOptions`
+
+```typescript
+interface TemplateEngineOptions {
+  viewsPath?: string;
+  extension?: string;
+  cache?: boolean;
+  options?: Record<string, unknown>;
+}
+```
+
+## Failover Types
+
+### `FailoverConfig`
+
+```typescript
+interface FailoverConfig {
+  chain: string[];
+  maxRetriesPerProvider?: number;  // default: 1
+  retryDelay?: number;             // default: 0
+  failoverDelay?: number;          // default: 0
+  onFailover?: (event: FailoverEvent) => void;
+}
+```
+
+### `FailoverEvent`
+
+```typescript
+interface FailoverEvent {
+  failedMailer: string;
+  error: string;
+  nextMailer: string;
+  attemptIndex: number;
+  timestamp: string;  // ISO 8601
+}
+```
+
+### `FailoverDetail`
+
+```typescript
+interface FailoverDetail {
+  mailer: string;
+  success: boolean;
+  error?: string;
+  durationMs: number;
+}
+```
+
+## Queue Types
+
+### `QueueConfig`
+
+```typescript
+interface QueueConfig {
+  driver: 'bull' | 'bullmq' | 'sync';
+  connection?: RedisConnectionConfig;
+  defaultQueue?: string;
+  prefix?: string;
+  retries?: number;
+  backoff?: BackoffConfig;
+}
+```
+
+### `RedisConnectionConfig`
+
+```typescript
+interface RedisConnectionConfig {
+  host?: string;
+  port?: number;
+  password?: string;
+  db?: number;
+  url?: string;
+}
+```
+
+### `BackoffConfig`
+
+```typescript
+interface BackoffConfig {
+  type: 'fixed' | 'exponential';
+  delay: number;
+}
+```
+
+### `QueuedMailJob`
+
+```typescript
+interface QueuedMailJob {
+  id: string;
+  mailOptions: MailOptions;
+  mailableClass?: string;
+  mailableData?: Record<string, unknown>;
+  attempts: number;
+  maxAttempts: number;
+  delay?: number;
+  scheduledAt?: Date;
+  createdAt: Date;
+}
+```
+
+### `QueueJobResult`
+
+```typescript
+interface QueueJobResult {
+  success: boolean;
+  jobId: string;
+  queue: string;
+  scheduledAt?: Date;
+  error?: string;
+}
+```
+
+### `QueueDriver`
+
+```typescript
+interface QueueDriver {
+  add(job: QueuedMailJob, queueName?: string): Promise<QueueJobResult>;
+  addDelayed(job: QueuedMailJob, delay: number, queueName?: string): Promise<QueueJobResult>;
+  addScheduled(job: QueuedMailJob, date: Date, queueName?: string): Promise<QueueJobResult>;
+  process(queueName: string, handler: (job: QueuedMailJob) => Promise<MailResponse>): void;
+  close(): Promise<void>;
+}
+```
+
+## Markdown Types
+
+### `MarkdownConfig`
+
+```typescript
+interface MarkdownConfig {
+  theme?: {
+    css?: string;
+    headerHtml?: string;
+    footerHtml?: string;
+  };
+  customCss?: string;
+}
+```
+
+### `MarkdownTheme`
+
+```typescript
+interface MarkdownTheme {
+  css: string;
+  headerHtml?: string;
+  footerHtml?: string;
+}
+```
+
+### `MarkdownRendererOptions`
+
+```typescript
+interface MarkdownRendererOptions {
+  theme?: MarkdownTheme;
+  customCss?: string;
+  juiceOptions?: Record<string, unknown>;
+}
+```
+
+## Testing Types
+
+### `SentMessage`
+
+```typescript
+interface SentMessage {
+  options: MailOptions;
+  mailable: Mailable | undefined;
+  timestamp: Date;
+}
+```

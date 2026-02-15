@@ -1,0 +1,32 @@
+# Introduction & Overview
+
+**@impruthvi/nodemail** brings the simplicity and elegance of Laravel's Mail system to the Node.js ecosystem with full TypeScript support.
+
+## Philosophy
+
+- **Laravel-inspired** — If you've used `Mail::to()->send()` in Laravel, you'll feel right at home.
+- **Lightweight** — Base package is ~25 MB (SMTP only). Install additional providers as needed.
+- **Modular** — Providers, template engines, queue drivers, and markdown support are all optional peer dependencies.
+- **Type-safe** — Full TypeScript support with strict typing throughout.
+
+## Feature Summary
+
+| Feature | Details |
+|---------|---------|
+| **Providers** | SMTP (Nodemailer), SendGrid, AWS SES, Mailgun, Resend, Postmark |
+| **Template Engines** | Handlebars, EJS, Pug |
+| **Queue** | Bull, BullMQ, Sync (dev) |
+| **Markdown Mail** | Write emails in Markdown with button, panel, and table components |
+| **Provider Failover** | Automatic failover chain with retries, delays, and monitoring callbacks |
+| **Testing** | `Mail.fake()` with Laravel-style send/queue assertions |
+
+## Requirements
+
+- **Node.js** >= 18
+- **TypeScript** 5.6+ (recommended)
+
+## Stats
+
+- 269 tests passing
+- 85%+ code coverage
+- MIT license

@@ -1,0 +1,82 @@
+# Pug
+
+**Install:**
+
+<PackageManagerTabs command="pug" />
+
+**Syntax:** Indentation-based, `#{variable}`, `=variable`, `each item in items`
+
+## Configuration and Usage
+
+```typescript
+Mail.configure({
+  // ...
+  templates: {
+    engine: 'pug',
+    viewsPath: './views/emails',
+    extension: '.pug',
+    cache: true,
+  },
+});
+
+await Mail.to('user@example.com')
+  .subject('Notification')
+  .template('notification')
+  .data({
+    title: 'Account Update',
+    message: 'New features available!',
+    username: 'john',
+    urgent: true,
+    items: ['Feature A', 'Feature B'],
+    timestamp: new Date().toISOString(),
+  })
+  .send();
+```
+
+**Template file** (`views/emails/notification.pug`):
+
+```pug
+doctype html
+html
+  head
+    title= title
+  body
+    h1= message
+    p Dear #{username},
+    p This is a notification about your account activity.
+    if urgent
+      p.alert This requires immediate attention!
+    ul
+      each item in items
+        li= item
+    p Sent at: #{timestamp}
+```
+
+## `PugEngine` Extras
+
+| Method | Signature | Description |
+|--------|-----------|-------------|
+| `compileFile()` | `compileFile(filePath: string): (data?) => string` | Compile a template file for reuse |
+| `clearCache()` | `clearCache(): void` | Clear the template cache |
+
+## Template in Mailable Classes
+
+Use the `view()` method in a Mailable to reference a template:
+
+```typescript
+class WelcomeEmail extends Mailable {
+  constructor(private user: { name: string; email: string }) {
+    super();
+  }
+
+  build() {
+    return this
+      .subject(`Welcome, ${this.user.name}!`)
+      .view('welcome', {
+        name: this.user.name,
+        email: this.user.email,
+        appName: 'My App',
+      });
+  }
+}
+```

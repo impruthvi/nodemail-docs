@@ -1,0 +1,63 @@
+# EJS
+
+**Install:**
+
+<PackageManagerTabs command="ejs" />
+
+**Syntax:** `<%= variable %>`, `<% if (condition) { %>`, `<% items.forEach(...) %>`
+
+## Configuration and Usage
+
+```typescript
+Mail.configure({
+  // ...
+  templates: {
+    engine: 'ejs',
+    viewsPath: './views/emails',
+    extension: '.ejs',
+    cache: true,
+  },
+});
+
+await Mail.to('customer@example.com')
+  .subject('Your Invoice')
+  .template('invoice')
+  .data({
+    invoiceNumber: '12345',
+    customerName: 'Jane',
+    items: [
+      { name: 'Widget', quantity: 2, price: 9.99 },
+    ],
+    total: 19.98,
+  })
+  .send();
+```
+
+**Template file** (`views/emails/invoice.ejs`):
+
+```ejs
+<!DOCTYPE html>
+<html>
+<body>
+    <h1>Invoice #<%= invoiceNumber %></h1>
+    <p>Dear <%= customerName %>,</p>
+    <table>
+        <tr><th>Item</th><th>Qty</th><th>Price</th></tr>
+        <% items.forEach(function(item) { %>
+        <tr>
+            <td><%= item.name %></td>
+            <td><%= item.quantity %></td>
+            <td>$<%= item.price %></td>
+        </tr>
+        <% }); %>
+    </table>
+    <p><strong>Total: $<%= total %></strong></p>
+</body>
+</html>
+```
+
+## `EjsEngine` Extras
+
+| Method | Signature | Description |
+|--------|-----------|-------------|
+| `clearCache()` | `clearCache(): void` | Clear the template cache |

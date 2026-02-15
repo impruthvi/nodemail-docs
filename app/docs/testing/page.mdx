@@ -1,0 +1,276 @@
+# Testing
+
+## `Mail.fake()` / `Mail.restore()`
+
+Enable fake mode to intercept all emails instead of sending them. This is the primary testing pattern:
+
+```typescript
+import { Mail } from '@impruthvi/nodemail';
+
+beforeEach(() => {
+  Mail.fake();    // All emails will be stored, not sent
+});
+
+afterEach(() => {
+  Mail.restore(); // Restore real mail system
+});
+```
+
+| Method | Signature | Description |
+|--------|-----------|-------------|
+| `Mail.fake()` | `Mail.fake(): MailFake` | Enable fake mode. Returns the `MailFake` instance. |
+| `Mail.restore()` | `Mail.restore(): void` | Restore the real mail system (disable fake mode). |
+| `Mail.getFake()` | `Mail.getFake(): MailFake \| null` | Get the current `MailFake` instance (or `null` if not faking). |
+
+## Send Assertions
+
+| Method | Signature | Description |
+|--------|-----------|-------------|
+| `assertSent()` | `Mail.assertSent<T>(MailableClass, callback?)` | Assert a mailable was sent (optionally matching a condition) |
+| `assertSentCount()` | `Mail.assertSentCount<T>(MailableClass, count)` | Assert a mailable was sent exactly N times |
+| `assertNotSent()` | `Mail.assertNotSent<T>(MailableClass, callback?)` | Assert a mailable was NOT sent |
+| `assertNothingSent()` | `Mail.assertNothingSent()` | Assert no emails were sent at all |
+
+```typescript
+// Assert WelcomeEmail was sent
+Mail.assertSent(WelcomeEmail);
+
+// Assert with conditions
+Mail.assertSent(WelcomeEmail, (mail) => {
+  return mail.hasTo('user@example.com') && mail.subjectContains('Welcome');
+});
+
+// Assert sent exactly 2 times
+Mail.assertSentCount(WelcomeEmail, 2);
+
+// Assert a specific mailable was NOT sent
+Mail.assertNotSent(PasswordResetEmail);
+
+// Assert nothing was sent at all
+Mail.assertNothingSent();
+```
+
+## Queue Assertions
+
+| Method | Signature | Description |
+|--------|-----------|-------------|
+| `assertQueued()` | `Mail.assertQueued<T>(MailableClass, callback?)` | Assert a mailable was queued |
+| `assertQueuedCount()` | `Mail.assertQueuedCount<T>(MailableClass, count)` | Assert a mailable was queued exactly N times |
+| `assertNotQueued()` | `Mail.assertNotQueued<T>(MailableClass, callback?)` | Assert a mailable was NOT queued |
+| `assertNothingQueued()` | `Mail.assertNothingQueued()` | Assert nothing was queued |
+
+```typescript
+// Assert WelcomeEmail was queued
+Mail.assertQueued(WelcomeEmail);
+
+// Assert with conditions
+Mail.assertQueued(WelcomeEmail, (mail) => mail.hasTo('user@example.com'));
+
+// Assert queued exactly once
+Mail.assertQueuedCount(WelcomeEmail, 1);
+
+// Assert nothing was queued
+Mail.assertNothingQueued();
+```
+
+## Retrieval Methods
+
+| Method | Signature | Description |
+|--------|-----------|-------------|
+| `sent()` | `Mail.sent<T>(MailableClass?): AssertableMessage[]` | Get all sent messages (optionally filtered) |
+| `queued()` | `Mail.queued<T>(MailableClass?): AssertableMessage[]` | Get all queued messages (optionally filtered) |
+| `hasSent()` | `Mail.hasSent(): boolean` | Check if any messages were sent |
+| `hasQueued()` | `Mail.hasQueued(): boolean` | Check if any messages were queued |
+
+```typescript
+// Get all sent WelcomeEmails
+const messages = Mail.sent(WelcomeEmail);
+
+// Inspect the first one
+const first = messages[0];
+console.log(first.getTo());      // ['user@example.com']
+console.log(first.getSubject()); // 'Welcome, John!'
+```
+
+## Failure Simulation
+
+| Method | Signature | Description |
+|--------|-----------|-------------|
+| `simulateFailures()` | `fake.simulateFailures(count: number)` | Simulate failures for the first N sends |
+| `resetFailures()` | `fake.resetFailures()` | Clear failure simulation state |
+| `clear()` | `fake.clear()` | Clear all sent/queued messages and reset failures |
+| `sentCount()` | `fake.sentCount(): number` | Get the number of sent messages |
+| `queuedCount()` | `fake.queuedCount(): number` | Get the number of queued messages |
+
+```typescript
+const fake = Mail.fake();
+
+// First 2 sends will return { success: false }
+fake.simulateFailures(2);
+
+// Test failover behavior...
+
+fake.resetFailures(); // Stop simulating failures
+fake.clear();         // Reset all state
+```
+
+## `AssertableMessage`
+
+Returned by `Mail.sent()` and `Mail.queued()`. Provides methods to inspect message properties.
+
+### Recipients
+
+| Method | Signature | Description |
+|--------|-----------|-------------|
+| `hasTo()` | `hasTo(email: string): boolean` | Check if message has a specific TO recipient |
+| `hasCc()` | `hasCc(email: string): boolean` | Check if message has a specific CC recipient |
+| `hasBcc()` | `hasBcc(email: string): boolean` | Check if message has a specific BCC recipient |
+| `getTo()` | `getTo(): string[]` | Get all TO recipients |
+| `getCc()` | `getCc(): string[]` | Get all CC recipients |
+| `getBcc()` | `getBcc(): string[]` | Get all BCC recipients |
+
+### Sender
+
+| Method | Signature | Description |
+|--------|-----------|-------------|
+| `hasFrom()` | `hasFrom(email: string): boolean` | Check if message has a specific FROM address |
+| `getFrom()` | `getFrom(): string \| undefined` | Get the FROM address |
+| `hasReplyTo()` | `hasReplyTo(email: string): boolean` | Check for a specific reply-to address |
+
+### Subject
+
+| Method | Signature | Description |
+|--------|-----------|-------------|
+| `hasSubject()` | `hasSubject(subject: string): boolean` | Exact subject match |
+| `subjectContains()` | `subjectContains(text: string): boolean` | Case-insensitive substring match |
+| `getSubject()` | `getSubject(): string` | Get the subject |
+
+### Content
+
+| Method | Signature | Description |
+|--------|-----------|-------------|
+| `hasHtml()` | `hasHtml(): boolean` | Check if message has HTML content |
+| `htmlContains()` | `htmlContains(text: string): boolean` | Check if HTML contains a string |
+| `getHtml()` | `getHtml(): string \| undefined` | Get the HTML content |
+| `hasText()` | `hasText(): boolean` | Check if message has plain text content |
+| `textContains()` | `textContains(text: string): boolean` | Check if plain text contains a string |
+| `getText()` | `getText(): string \| undefined` | Get the plain text content |
+
+### Attachments
+
+| Method | Signature | Description |
+|--------|-----------|-------------|
+| `hasAttachments()` | `hasAttachments(): boolean` | Check if message has any attachments |
+| `hasAttachment()` | `hasAttachment(filename: string): boolean` | Check for a specific attachment by filename |
+| `getAttachments()` | `getAttachments(): Attachment[]` | Get all attachments |
+
+### Headers
+
+| Method | Signature | Description |
+|--------|-----------|-------------|
+| `hasHeader()` | `hasHeader(name: string, value?: string): boolean` | Check for header (optionally with specific value) |
+| `getHeader()` | `getHeader(name: string): string \| undefined` | Get a header value |
+
+### Template
+
+| Method | Signature | Description |
+|--------|-----------|-------------|
+| `hasTemplate()` | `hasTemplate(template: string): boolean` | Check if a specific template was used |
+| `getTemplate()` | `getTemplate(): string \| undefined` | Get the template name |
+| `hasData()` | `hasData(key: string, value?: unknown): boolean` | Check for template data (optionally with specific value) |
+| `getData()` | `getData(key: string): unknown` | Get a template data value |
+| `getAllData()` | `getAllData(): Record<string, unknown> \| undefined` | Get all template data |
+
+### Markdown
+
+| Method | Signature | Description |
+|--------|-----------|-------------|
+| `isMarkdown()` | `isMarkdown(): boolean` | Check if message was built from markdown |
+| `getMarkdown()` | `getMarkdown(): string \| undefined` | Get the raw markdown source |
+| `markdownContains()` | `markdownContains(text: string): boolean` | Check if markdown source contains a string |
+
+### Failover
+
+| Method | Signature | Description |
+|--------|-----------|-------------|
+| `wasFailoverUsed()` | `wasFailoverUsed(): boolean` | Check if failover was triggered |
+| `getProvider()` | `getProvider(): string \| undefined` | Get the provider that actually sent the message |
+| `getFailoverAttempts()` | `getFailoverAttempts(): FailoverDetail[]` | Get all failover attempt details |
+| `getResponse()` | `getResponse(): MailResponse \| undefined` | Get the full MailResponse |
+
+### Other
+
+| Method | Signature | Description |
+|--------|-----------|-------------|
+| `getOptions()` | `getOptions(): MailOptions` | Get the underlying mail options |
+| `getMailable()` | `getMailable(): Mailable \| undefined` | Get the mailable instance (if any) |
+
+## Real-World Test Example
+
+```typescript
+import { Mail, Mailable } from '@impruthvi/nodemail';
+
+class WelcomeEmail extends Mailable {
+  constructor(public userName: string) {
+    super();
+  }
+
+  build() {
+    return this
+      .subject(`Welcome, ${this.userName}!`)
+      .html(`<h1>Hello ${this.userName}!</h1>`)
+      .from('noreply@example.com');
+  }
+}
+
+class PasswordResetEmail extends Mailable {
+  constructor(public resetUrl: string) {
+    super();
+  }
+
+  build() {
+    return this
+      .subject('Reset Your Password')
+      .html(`<a href="${this.resetUrl}">Reset</a>`);
+  }
+}
+
+describe('User Registration', () => {
+  beforeEach(() => {
+    Mail.fake();
+  });
+
+  afterEach(() => {
+    Mail.restore();
+  });
+
+  it('sends welcome email on registration', async () => {
+    // Application code that sends email
+    await Mail.to('john@example.com').send(new WelcomeEmail('John'));
+
+    // Assertions
+    Mail.assertSent(WelcomeEmail);
+    Mail.assertSent(WelcomeEmail, (mail) => {
+      return mail.hasTo('john@example.com') &&
+             mail.hasSubject('Welcome, John!') &&
+             mail.hasFrom('noreply@example.com') &&
+             mail.htmlContains('Hello John');
+    });
+    Mail.assertSentCount(WelcomeEmail, 1);
+    Mail.assertNotSent(PasswordResetEmail);
+  });
+
+  it('does not send email when validation fails', async () => {
+    // Code that doesn't send email
+    Mail.assertNothingSent();
+  });
+
+  it('queues welcome email for background sending', async () => {
+    await Mail.to('john@example.com').queue(new WelcomeEmail('John'));
+
+    Mail.assertQueued(WelcomeEmail);
+    Mail.assertQueued(WelcomeEmail, (mail) => mail.hasTo('john@example.com'));
+    Mail.assertNothingSent(); // Queued, not sent
+  });
+});
+```

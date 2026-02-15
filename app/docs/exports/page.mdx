@@ -1,0 +1,76 @@
+# Exports Reference
+
+Everything exported from `@impruthvi/nodemail` (`src/index.ts`):
+
+## Classes
+
+| Export | Description |
+|--------|-------------|
+| `Mail` | Static facade -- `configure()`, `to()`, `send()`, `fake()`, assertions |
+| `MailManager` | Factory and manager for mail providers |
+| `Mailable` | Abstract base class for reusable email definitions |
+| `Message` | Low-level message builder with fluent API |
+| `FailoverManager` | Orchestrates provider failover |
+| `SmtpProvider` | SMTP provider (Nodemailer) |
+| `SendGridProvider` | SendGrid provider |
+| `SesProvider` | AWS SES provider |
+| `MailgunProvider` | Mailgun provider |
+| `ResendProvider` | Resend provider |
+| `PostmarkProvider` | Postmark provider |
+| `HandlebarsEngine` | Handlebars template engine |
+| `EjsEngine` | EJS template engine |
+| `PugEngine` | Pug template engine |
+| `QueueManager` | Queue management |
+| `BullMQDriver` | BullMQ queue driver |
+| `BullDriver` | Bull (legacy) queue driver |
+| `MarkdownRenderer` | Markdown-to-HTML renderer |
+| `MarkdownMailable` | Abstract mailable with markdown support |
+| `MailFake` | Fake mail provider for testing |
+| `AssertableMessage` | Message wrapper with assertion helpers |
+
+## Functions
+
+| Export | Description |
+|--------|-------------|
+| `getDefaultTheme()` | Returns the default `MarkdownTheme` |
+
+## Constants
+
+| Export | Value | Description |
+|--------|-------|-------------|
+| `VERSION` | `'1.0.0'` | Package version |
+
+## Types
+
+| Export | Description |
+|--------|-------------|
+| `TemplateEngine` | Template engine interface |
+| `TemplateEngineOptions` | Template engine constructor options |
+| `MarkdownRendererOptions` | Markdown renderer options |
+| `MarkdownTheme` | Markdown theme interface |
+| `SentMessage` | Shape of a stored sent message |
+| `MailConfig` | Top-level configuration object |
+| `MailerConfig` | Individual mailer configuration |
+| `SmtpConfig` | SMTP provider configuration |
+| `SendGridConfig` | SendGrid provider configuration |
+| `SesConfig` | AWS SES provider configuration |
+| `MailgunConfig` | Mailgun provider configuration |
+| `ResendConfig` | Resend provider configuration |
+| `PostmarkConfig` | Postmark provider configuration |
+| `MailtrapConfig` | Mailtrap provider configuration |
+| `MailAddress` | Email address with optional display name |
+| `Attachment` | Email attachment definition |
+| `MailOptions` | Full mail options for sending |
+| `MailProvider` | Provider interface |
+| `MailResponse` | Response from sending an email |
+| `FailoverConfig` | Failover chain configuration |
+| `FailoverEvent` | Failover callback event data |
+| `FailoverDetail` | Individual failover attempt detail |
+| `QueueConfig` | Queue system configuration |
+| `RedisConnectionConfig` | Redis connection options |
+| `BackoffConfig` | Queue retry backoff settings |
+| `QueuedMailJob` | Queued mail job definition |
+| `QueueJobResult` | Result of queuing a job |
+| `QueueDriver` | Queue driver interface |
+| `TemplateConfig` | Template system configuration |
+| `MarkdownConfig` | Markdown mail configuration |

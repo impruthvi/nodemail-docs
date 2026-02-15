@@ -1,0 +1,192 @@
+# Markdown Mail
+
+Write emails in Markdown with built-in components. The markdown is converted to responsive, CSS-inlined HTML with an auto-generated plain text version.
+
+<PackageManagerTabs command="marked juice" />
+
+## `MarkdownMailable`
+
+Extends `Mailable` with markdown-specific methods:
+
+```typescript
+import { MarkdownMailable } from '@impruthvi/nodemail';
+
+class WelcomeEmail extends MarkdownMailable {
+  constructor(private user: { name: string }) {
+    super();
+  }
+
+  build(): this {
+    return this
+      .subject(`Welcome, ${this.user.name}!`)
+      .from('noreply@example.com')
+      .markdown(`# Welcome, {{name}}!
+
+Thank you for joining our platform.
+
+[button url="https://example.com/start" color="primary"]Get Started[/button]
+
+[panel]Need help? Contact support@example.com[/panel]`, {
+        name: this.user.name,
+      });
+  }
+}
+
+await Mail.to('user@example.com').send(new WelcomeEmail({ name: 'John' }));
+```
+
+### `MarkdownMailable` Protected Methods
+
+| Method | Signature | Description |
+|--------|-----------|-------------|
+| `markdown()` | `protected markdown(content: string, data?: Record<string, unknown>): this` | Set markdown content with optional data |
+| `theme()` | `protected theme(theme: MarkdownTheme): this` | Set a custom theme for this email |
+| `customCss()` | `protected customCss(css: string): this` | Add custom CSS for this email |
+
+Plus all inherited methods from `Mailable` (`subject()`, `from()`, `cc()`, etc.).
+
+## Built-in Components
+
+### Button
+
+Call-to-action buttons with color variants:
+
+```markdown
+[button url="https://example.com" color="primary"]Click Here[/button]
+[button url="https://example.com" color="success"]Confirm[/button]
+[button url="https://example.com" color="error"]Delete[/button]
+```
+
+**Colors:** `primary` (blue, default), `success` (green), `error` (red)
+
+### Panel
+
+Bordered callout sections for important notices:
+
+```markdown
+[panel]
+**Important:** This is a highlighted notice.
+[/panel]
+```
+
+### Table
+
+Styled table wrapper:
+
+```markdown
+[table]
+| Name  | Price  |
+|-------|--------|
+| Item  | $9.99  |
+[/table]
+```
+
+## `MarkdownRenderer`
+
+Use the renderer directly for more control:
+
+```typescript
+import { MarkdownRenderer } from '@impruthvi/nodemail';
+
+const renderer = new MarkdownRenderer({
+  theme: { css: 'h1 { color: red; }' },
+  customCss: '.button { border-radius: 8px; }',
+});
+
+const { html, text } = await renderer.render('# Hello, {{name}}!', {
+  name: 'World',
+});
+
+console.log(html); // Full HTML with inlined CSS
+console.log(text); // Plain text version
+```
+
+### `MarkdownRenderer` Methods
+
+| Method | Signature | Description |
+|--------|-----------|-------------|
+| `render()` | `render(markdown: string, data?: Record<string, unknown>): Promise<{ html: string; text: string }>` | Render markdown to HTML and plain text |
+| `setTheme()` | `setTheme(theme: MarkdownTheme): void` | Change the theme at runtime |
+| `getTheme()` | `getTheme(): MarkdownTheme` | Get the current theme |
+
+### `MarkdownRendererOptions`
+
+```typescript
+interface MarkdownRendererOptions {
+  theme?: MarkdownTheme;               // Custom theme
+  customCss?: string;                  // Additional CSS
+  juiceOptions?: Record<string, unknown>; // Options passed to juice for CSS inlining
+}
+```
+
+## `MarkdownTheme`
+
+```typescript
+interface MarkdownTheme {
+  css: string;               // CSS styles for the email
+  headerHtml?: string;       // HTML inserted in the email header
+  footerHtml?: string;       // HTML inserted in the email footer
+}
+```
+
+## Default Theme
+
+The default theme provides a professional, responsive email layout:
+
+- System font stack (Apple, Segoe UI, Roboto, etc.)
+- Max width: 570px centered layout
+- White content area with subtle shadow
+- Light gray background (#f4f4f7)
+- Styled typography, code blocks, blockquotes, horizontal rules
+- Button components (primary blue, success green, error red)
+- Panel components with left border accent
+- Table components with header styling
+- Responsive: adjusts padding on screens &lt; 600px
+
+Access the default theme:
+
+```typescript
+import { getDefaultTheme } from '@impruthvi/nodemail';
+
+const theme = getDefaultTheme();
+console.log(theme.css); // Full default CSS
+```
+
+## Custom Themes
+
+Override the theme per-mailable or globally:
+
+**Per-mailable:**
+
+```typescript
+class BrandedEmail extends MarkdownMailable {
+  build(): this {
+    return this
+      .subject('Update')
+      .markdown('# News\n\nLatest updates...')
+      .theme({
+        css: 'h1 { color: #e94560; } .button-primary { background: #e94560; }',
+        headerHtml: '<img src="https://example.com/logo.png" alt="Logo">',
+        footerHtml: '<p>&copy; 2026 Company</p>',
+      });
+  }
+}
+```
+
+**Global config:**
+
+```typescript
+Mail.configure({
+  // ...
+  markdown: {
+    theme: {
+      css: '/* your global CSS */',
+      headerHtml: '<img src="logo.png">',
+      footerHtml: '<p>Footer</p>',
+    },
+    customCss: '.button { border-radius: 8px; }',
+  },
+});
+```
+
+Per-mailable settings override the global config.

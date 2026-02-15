@@ -1,0 +1,22 @@
+# Postmark Provider
+
+The Postmark provider sends emails through the Postmark API using the official `postmark` package.
+
+## Installation
+
+<PackageManagerTabs command="postmark" />
+
+## Configuration
+
+```typescript
+Mail.configure({
+  default: 'postmark',
+  from: { address: 'noreply@yourdomain.com', name: 'My App' },
+  mailers: {
+    postmark: {
+      driver: 'postmark',
+      serverToken: process.env.POSTMARK_SERVER_TOKEN!,
+    },
+  },
+});
+```

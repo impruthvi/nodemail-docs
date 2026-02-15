@@ -1,0 +1,71 @@
+# Quick Start
+
+## Minimal SMTP Configuration
+
+```typescript
+import { Mail } from '@impruthvi/nodemail';
+
+Mail.configure({
+  default: 'smtp',
+  from: {
+    address: 'noreply@example.com',
+    name: 'My App',
+  },
+  mailers: {
+    smtp: {
+      driver: 'smtp',
+      host: 'smtp.example.com',
+      port: 587,
+      auth: {
+        user: 'your-username',
+        pass: 'your-password',
+      },
+    },
+  },
+});
+
+// Send an email
+const result = await Mail.to('user@example.com')
+  .subject('Welcome!')
+  .html('<h1>Hello World!</h1>')
+  .send();
+
+console.log(result.success); // true
+```
+
+## Fluent API Example
+
+```typescript
+await Mail.to('user@example.com')
+  .subject('Complete Example')
+  .html('<h1>Hello!</h1>')
+  .text('Hello!')
+  .from('custom@example.com')
+  .cc(['manager@example.com'])
+  .bcc('archive@example.com')
+  .replyTo('support@example.com')
+  .attachments([{ filename: 'report.pdf', path: './files/report.pdf' }])
+  .headers({ 'X-Custom-Header': 'value' })
+  .send();
+```
+
+## Mailable Class Example
+
+```typescript
+import { Mailable, Mail } from '@impruthvi/nodemail';
+
+class WelcomeEmail extends Mailable {
+  constructor(private user: { name: string }) {
+    super();
+  }
+
+  build() {
+    return this
+      .subject(`Welcome, ${this.user.name}!`)
+      .html(`<h1>Hello ${this.user.name}!</h1>`);
+  }
+}
+
+// Send via facade
+await Mail.to('user@example.com').send(new WelcomeEmail({ name: 'John' }));
+```

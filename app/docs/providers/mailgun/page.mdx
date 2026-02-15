@@ -1,0 +1,26 @@
+# Mailgun Provider
+
+The Mailgun provider sends emails through the Mailgun API using the official `mailgun.js` package.
+
+## Installation
+
+<PackageManagerTabs command="mailgun.js form-data" />
+
+## Configuration
+
+```typescript
+Mail.configure({
+  default: 'mailgun',
+  from: { address: 'noreply@yourdomain.com', name: 'My App' },
+  mailers: {
+    mailgun: {
+      driver: 'mailgun',
+      domain: process.env.MAILGUN_DOMAIN!,
+      apiKey: process.env.MAILGUN_API_KEY!,
+      region: 'us', // 'us' (default) or 'eu'
+    },
+  },
+});
+```
+
+> **EU Region:** Setting `region: 'eu'` routes API calls to `https://api.eu.mailgun.net`. Use this if your Mailgun account is configured for the EU region.

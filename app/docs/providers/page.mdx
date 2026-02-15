@@ -1,0 +1,20 @@
+# Email Providers
+
+All providers implement the `MailProvider` interface, giving you a consistent API regardless of which email service you use:
+
+```typescript
+interface MailProvider {
+  send(options: MailOptions): Promise<MailResponse>;
+}
+```
+
+Choose the provider that best fits your infrastructure and swap between them without changing your application code.
+
+## Available Providers
+
+- [**SMTP**](/docs/providers/smtp) -- Built-in provider using Nodemailer. No extra dependencies required.
+- [**SendGrid**](/docs/providers/sendgrid) -- Cloud-based email delivery via the SendGrid API.
+- [**AWS SES**](/docs/providers/ses) -- Amazon Simple Email Service with full AWS SDK support.
+- [**Mailgun**](/docs/providers/mailgun) -- Mailgun API-based email delivery with US and EU region support.
+- [**Resend**](/docs/providers/resend) -- Modern email API built for developers.
+- [**Postmark**](/docs/providers/postmark) -- Transactional email service focused on delivery speed.

@@ -1,0 +1,138 @@
+# Queue Support
+
+Send emails in the background using Redis-backed job queues.
+
+<PackageManagerTabs command="bullmq ioredis" label="BullMQ (recommended)" />
+
+<PackageManagerTabs command="bull" label="Bull (legacy)" />
+
+## Queue Configuration
+
+```typescript
+Mail.configure({
+  // ... mailer config
+  queue: {
+    driver: 'bullmq',       // 'bullmq', 'bull', or 'sync'
+    connection: {
+      host: 'localhost',
+      port: 6379,
+    },
+    defaultQueue: 'mail',
+    prefix: 'nodemail',
+    retries: 3,
+    backoff: { type: 'exponential', delay: 1000 },
+  },
+});
+```
+
+## Queue Drivers
+
+| Driver | Package | Description |
+|--------|---------|-------------|
+| `bullmq` | `bullmq` + `ioredis` | Recommended. Modern, actively maintained. |
+| `bull` | `bull` | Legacy. Stable but no longer actively developed. |
+| `sync` | (none) | Development/testing. Jobs are stored but not processed in background. |
+
+## Sending Patterns
+
+### Queue immediately
+
+```typescript
+await Mail.to('user@example.com')
+  .subject('Welcome!')
+  .html('<h1>Welcome!</h1>')
+  .queue();
+```
+
+### Queue with delay (seconds)
+
+```typescript
+// Send in 60 seconds
+await Mail.to('user@example.com')
+  .subject('Follow Up')
+  .html('<p>How are things going?</p>')
+  .later(60);
+```
+
+### Schedule for a specific time
+
+```typescript
+// Send on Christmas
+await Mail.to('user@example.com')
+  .subject('Merry Christmas!')
+  .html('<h1>Happy Holidays!</h1>')
+  .at(new Date('2026-12-25T00:00:00'));
+```
+
+### Queue a Mailable
+
+```typescript
+// Via fluent API
+await Mail.to('user@example.com').queue(new WelcomeEmail(user));
+await Mail.to('user@example.com').later(60, new FollowUpEmail(user));
+await Mail.to('user@example.com').at(scheduledDate, new ReminderEmail(user));
+
+// Via Mail facade
+await Mail.queue(new WelcomeEmail(user));
+await Mail.later(new FollowUpEmail(user), 60);
+await Mail.at(new WelcomeEmail(user), scheduledDate);
+```
+
+## Processing Queued Emails
+
+Start a worker to process queued emails:
+
+```typescript
+// In your worker process
+await Mail.processQueue();
+
+// Or with a specific queue name
+await Mail.processQueue('priority-mail');
+```
+
+## `QueueManager` Direct API
+
+For advanced usage, access the `QueueManager` directly:
+
+```typescript
+import { QueueManager } from '@impruthvi/nodemail';
+
+const queueManager = new QueueManager({
+  driver: 'bullmq',
+  connection: { host: 'localhost', port: 6379 },
+  retries: 3,
+  backoff: { type: 'exponential', delay: 1000 },
+});
+
+// Queue an email
+await queueManager.queue(mailOptions);
+
+// Queue with delay
+await queueManager.later(mailOptions, 60);
+
+// Schedule for a specific time
+await queueManager.at(mailOptions, new Date('2026-12-25'));
+
+// Process jobs
+await queueManager.process(async (job) => {
+  // Send the email
+  return await provider.send(job.mailOptions);
+});
+
+// Get configuration
+const config = queueManager.getConfig();
+
+// Close connections
+await queueManager.close();
+```
+
+### `QueueManager` Methods
+
+| Method | Signature | Description |
+|--------|-----------|-------------|
+| `queue()` | `queue(mailOptions: MailOptions, queueName?: string): Promise<QueueJobResult>` | Add a job to the queue |
+| `later()` | `later(mailOptions: MailOptions, delaySeconds: number, queueName?: string): Promise<QueueJobResult>` | Add a delayed job |
+| `at()` | `at(mailOptions: MailOptions, date: Date, queueName?: string): Promise<QueueJobResult>` | Schedule a job for a specific time |
+| `process()` | `process(handler: (job: QueuedMailJob) => Promise<MailResponse>, queueName?: string): Promise<void>` | Start processing jobs |
+| `close()` | `close(): Promise<void>` | Close all queue connections |
+| `getConfig()` | `getConfig(): QueueConfig` | Get the current queue configuration |

@@ -1,0 +1,60 @@
+# Handlebars
+
+**Install:**
+
+<PackageManagerTabs command="handlebars" />
+
+**Syntax:** `{{variable}}`, `{{#if}}`, `{{#each}}`, `{{> partial}}`
+
+## Configuration and Usage
+
+```typescript
+Mail.configure({
+  // ...
+  templates: {
+    engine: 'handlebars',
+    viewsPath: './views/emails',
+    extension: '.hbs',
+    cache: true,
+  },
+});
+
+await Mail.to('user@example.com')
+  .subject('Welcome!')
+  .template('welcome')
+  .data({ name: 'John', appName: 'My App' })
+  .send();
+```
+
+**Template file** (`views/emails/welcome.hbs`):
+
+```handlebars
+<html>
+<body>
+    <h1>Welcome, {{name}}!</h1>
+    <p>Thank you for joining {{appName}}.</p>
+</body>
+</html>
+```
+
+## `HandlebarsEngine` Extras
+
+| Method | Signature | Description |
+|--------|-----------|-------------|
+| `registerHelper()` | `registerHelper(name: string, fn: (...args: any[]) => any): void` | Register a Handlebars helper |
+| `registerPartial()` | `registerPartial(name: string, partial: string): void` | Register a Handlebars partial |
+| `clearCache()` | `clearCache(): void` | Clear the template cache |
+
+```typescript
+import { HandlebarsEngine } from '@impruthvi/nodemail';
+
+const engine = new HandlebarsEngine({ viewsPath: './views/emails' });
+
+// Register a helper
+engine.registerHelper('uppercase', (str: string) => str.toUpperCase());
+
+// Register a partial
+engine.registerPartial('header', '<header><h1>{{title}}</h1></header>');
+
+// Use in template: {{uppercase name}} or {{> header}}
+```

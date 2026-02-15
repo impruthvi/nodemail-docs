@@ -1,0 +1,39 @@
+# Template Engines
+
+All template engines implement the `TemplateEngine` interface:
+
+```typescript
+interface TemplateEngine {
+  render(template: string, data?: Record<string, unknown>): Promise<string>;
+  renderFile(filePath: string, data?: Record<string, unknown>): Promise<string>;
+  compile(template: string): (data?: Record<string, unknown>) => string;
+}
+```
+
+## Shared Configuration
+
+Templates are configured via the `templates` key in `MailConfig`:
+
+```typescript
+Mail.configure({
+  // ... mailer config
+  templates: {
+    engine: 'handlebars', // or 'ejs', 'pug', or a TemplateEngine instance
+    viewsPath: './views/emails',
+    extension: '.hbs',
+    cache: true,
+  },
+});
+```
+
+> **Note:** You can also pass a custom `TemplateEngine` instance instead of a string:
+
+```typescript
+import { HandlebarsEngine } from '@impruthvi/nodemail';
+
+const engine = new HandlebarsEngine({ viewsPath: './emails' });
+Mail.configure({
+  // ...
+  templates: { engine },
+});
+```

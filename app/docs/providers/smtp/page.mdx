@@ -1,0 +1,43 @@
+# SMTP Provider
+
+The SMTP provider uses Nodemailer under the hood and is included with the base `@impruthvi/nodemail` package. No additional installation is required.
+
+## Installation
+
+Included with `@impruthvi/nodemail` -- no extra dependencies needed.
+
+## Configuration
+
+```typescript
+Mail.configure({
+  default: 'smtp',
+  from: { address: 'noreply@example.com', name: 'My App' },
+  mailers: {
+    smtp: {
+      driver: 'smtp',
+      host: 'smtp.example.com',
+      port: 587,
+      auth: { user: 'username', pass: 'password' },
+    },
+  },
+});
+```
+
+## SmtpProvider Extras
+
+The `SmtpProvider` exposes an additional `verify()` method that lets you check whether the SMTP connection is valid before sending emails.
+
+- `verify(): Promise<boolean>` -- Returns `true` if the connection is valid.
+
+```typescript
+import { SmtpProvider } from '@impruthvi/nodemail';
+
+const smtp = new SmtpProvider({
+  driver: 'smtp',
+  host: 'smtp.example.com',
+  port: 587,
+  auth: { user: 'user', pass: 'pass' },
+});
+
+const isValid = await smtp.verify(); // true or false
+```

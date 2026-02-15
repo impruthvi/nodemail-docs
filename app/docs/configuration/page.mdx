@@ -1,0 +1,393 @@
+# Configuration Reference
+
+## `MailConfig`
+
+The root configuration object passed to `Mail.configure()`.
+
+```typescript
+interface MailConfig {
+  default: string;                          // Name of the default mailer
+  from: {
+    address: string;                        // Default sender email address
+    name: string;                           // Default sender name
+  };
+  mailers: Record<string, MailerConfig>;    // Mailer configurations (keyed by name)
+  templates?: TemplateConfig;               // Template engine configuration
+  queue?: QueueConfig;                      // Queue configuration
+  markdown?: MarkdownConfig;                // Markdown configuration
+  failover?: FailoverConfig;                // Global failover configuration
+}
+```
+
+## `MailerConfig`
+
+Base configuration for any mailer. Each driver extends this with driver-specific fields.
+
+```typescript
+interface MailerConfig {
+  driver: 'smtp' | 'sendgrid' | 'ses' | 'mailgun' | 'resend' | 'postmark' | 'mailtrap';
+  failover?: FailoverConfig;  // Per-mailer failover override
+  [key: string]: unknown;     // Driver-specific fields
+}
+```
+
+## Per-Provider Config
+
+### SMTP (`SmtpConfig`)
+
+```typescript
+interface SmtpConfig extends MailerConfig {
+  driver: 'smtp';
+  host: string;               // SMTP server hostname
+  port: number;               // SMTP server port (typically 25, 465, or 587)
+  username?: string;          // SMTP username (alternative to auth)
+  password?: string;          // SMTP password (alternative to auth)
+  encryption?: 'tls' | 'ssl'; // Encryption type
+  secure?: boolean;           // Use TLS (default: false)
+  auth?: {
+    user: string;             // SMTP auth username
+    pass: string;             // SMTP auth password
+  };
+  options?: Record<string, unknown>; // Additional Nodemailer transport options
+}
+```
+
+**Example:**
+
+```typescript
+{
+  smtp: {
+    driver: 'smtp',
+    host: process.env.SMTP_HOST!,
+    port: 587,
+    auth: {
+      user: process.env.SMTP_USER!,
+      pass: process.env.SMTP_PASS!,
+    },
+  },
+}
+```
+
+### SendGrid (`SendGridConfig`)
+
+```typescript
+interface SendGridConfig extends MailerConfig {
+  driver: 'sendgrid';
+  apiKey: string;             // SendGrid API key
+}
+```
+
+**Example:**
+
+```typescript
+{
+  sendgrid: {
+    driver: 'sendgrid',
+    apiKey: process.env.SENDGRID_API_KEY!,
+  },
+}
+```
+
+### AWS SES (`SesConfig`)
+
+```typescript
+interface SesConfig extends MailerConfig {
+  driver: 'ses';
+  region: string;              // AWS region (e.g., 'us-east-1')
+  accessKeyId?: string;        // AWS access key (optional if using IAM roles)
+  secretAccessKey?: string;    // AWS secret key (optional if using IAM roles)
+}
+```
+
+**Example:**
+
+```typescript
+{
+  ses: {
+    driver: 'ses',
+    region: 'us-east-1',
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+  },
+}
+```
+
+### Mailgun (`MailgunConfig`)
+
+```typescript
+interface MailgunConfig extends MailerConfig {
+  driver: 'mailgun';
+  domain: string;              // Your Mailgun domain
+  apiKey: string;              // Mailgun API key
+  region?: 'us' | 'eu';       // API region (default: 'us')
+}
+```
+
+**Example:**
+
+```typescript
+{
+  mailgun: {
+    driver: 'mailgun',
+    domain: process.env.MAILGUN_DOMAIN!,
+    apiKey: process.env.MAILGUN_API_KEY!,
+    region: 'us',
+  },
+}
+```
+
+### Resend (`ResendConfig`)
+
+```typescript
+interface ResendConfig extends MailerConfig {
+  driver: 'resend';
+  apiKey: string;              // Resend API key
+}
+```
+
+**Example:**
+
+```typescript
+{
+  resend: {
+    driver: 'resend',
+    apiKey: process.env.RESEND_API_KEY!,
+  },
+}
+```
+
+### Postmark (`PostmarkConfig`)
+
+```typescript
+interface PostmarkConfig extends MailerConfig {
+  driver: 'postmark';
+  serverToken: string;         // Postmark server API token
+}
+```
+
+**Example:**
+
+```typescript
+{
+  postmark: {
+    driver: 'postmark',
+    serverToken: process.env.POSTMARK_SERVER_TOKEN!,
+  },
+}
+```
+
+### Mailtrap (`MailtrapConfig`)
+
+```typescript
+interface MailtrapConfig extends MailerConfig {
+  driver: 'mailtrap';
+  token: string;               // Mailtrap API token
+  inboxId: string;             // Mailtrap inbox ID
+}
+```
+
+## Template Config (`TemplateConfig`)
+
+```typescript
+interface TemplateConfig {
+  engine?: 'handlebars' | 'ejs' | 'pug' | TemplateEngine; // Engine name or custom instance
+  viewsPath?: string;          // Base directory for template files (default: './views')
+  extension?: string;          // File extension (default depends on engine: .hbs, .ejs, .pug)
+  cache?: boolean;             // Enable template caching (default: true)
+  options?: Record<string, unknown>; // Engine-specific options
+}
+```
+
+**Example:**
+
+```typescript
+{
+  templates: {
+    engine: 'handlebars',
+    viewsPath: './views/emails',
+    extension: '.hbs',
+    cache: true,
+  },
+}
+```
+
+## Queue Config (`QueueConfig`)
+
+```typescript
+interface QueueConfig {
+  driver: 'bull' | 'bullmq' | 'sync'; // Queue driver
+  connection?: RedisConnectionConfig;   // Redis connection settings
+  defaultQueue?: string;                // Default queue name (default: 'mail')
+  prefix?: string;                      // Queue name prefix (default: 'nodemail')
+  retries?: number;                     // Max retry attempts (default: 3)
+  backoff?: BackoffConfig;              // Retry backoff strategy
+}
+```
+
+### `RedisConnectionConfig`
+
+```typescript
+interface RedisConnectionConfig {
+  host?: string;               // Redis host (default: 'localhost')
+  port?: number;               // Redis port (default: 6379)
+  password?: string;           // Redis password
+  db?: number;                 // Redis database number
+  url?: string;                // Redis connection URL (overrides host/port)
+}
+```
+
+### `BackoffConfig`
+
+```typescript
+interface BackoffConfig {
+  type: 'fixed' | 'exponential'; // Backoff strategy
+  delay: number;                  // Base delay in milliseconds
+}
+```
+
+**Example:**
+
+```typescript
+{
+  queue: {
+    driver: 'bullmq',
+    connection: { host: 'localhost', port: 6379 },
+    defaultQueue: 'mail',
+    prefix: 'nodemail',
+    retries: 3,
+    backoff: { type: 'exponential', delay: 1000 },
+  },
+}
+```
+
+## Markdown Config (`MarkdownConfig`)
+
+```typescript
+interface MarkdownConfig {
+  theme?: {
+    css?: string;              // Custom CSS for the email theme
+    headerHtml?: string;       // HTML to insert in the email header
+    footerHtml?: string;       // HTML to insert in the email footer
+  };
+  customCss?: string;          // Additional CSS appended after theme CSS
+}
+```
+
+**Example:**
+
+```typescript
+{
+  markdown: {
+    theme: {
+      css: 'h1 { color: #333; }',
+      headerHtml: '<img src="https://example.com/logo.png" alt="Logo">',
+      footerHtml: '<p>&copy; 2026 My Company</p>',
+    },
+    customCss: '.button { border-radius: 8px; }',
+  },
+}
+```
+
+## Failover Config (`FailoverConfig`)
+
+```typescript
+interface FailoverConfig {
+  chain: string[];                               // Ordered list of backup mailer names
+  maxRetriesPerProvider?: number;                 // Retries per provider (default: 1)
+  retryDelay?: number;                           // Delay (ms) between retries on same provider (default: 0)
+  failoverDelay?: number;                        // Delay (ms) before switching to next provider (default: 0)
+  onFailover?: (event: FailoverEvent) => void;   // Callback on failover transitions
+}
+```
+
+**Example:**
+
+```typescript
+{
+  failover: {
+    chain: ['sendgrid', 'ses'],
+    maxRetriesPerProvider: 2,
+    retryDelay: 1000,
+    failoverDelay: 500,
+    onFailover: (event) => {
+      console.log(`Failover: ${event.failedMailer} → ${event.nextMailer}`);
+    },
+  },
+}
+```
+
+## Full Combined Configuration Example
+
+```typescript
+import { Mail } from '@impruthvi/nodemail';
+
+Mail.configure({
+  default: 'smtp',
+  from: {
+    address: 'noreply@example.com',
+    name: 'My App',
+  },
+  mailers: {
+    smtp: {
+      driver: 'smtp',
+      host: process.env.SMTP_HOST!,
+      port: 587,
+      auth: {
+        user: process.env.SMTP_USER!,
+        pass: process.env.SMTP_PASS!,
+      },
+    },
+    sendgrid: {
+      driver: 'sendgrid',
+      apiKey: process.env.SENDGRID_API_KEY!,
+    },
+    ses: {
+      driver: 'ses',
+      region: 'us-east-1',
+      accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+    },
+    mailgun: {
+      driver: 'mailgun',
+      domain: process.env.MAILGUN_DOMAIN!,
+      apiKey: process.env.MAILGUN_API_KEY!,
+      region: 'us',
+    },
+    resend: {
+      driver: 'resend',
+      apiKey: process.env.RESEND_API_KEY!,
+    },
+    postmark: {
+      driver: 'postmark',
+      serverToken: process.env.POSTMARK_SERVER_TOKEN!,
+    },
+  },
+  templates: {
+    engine: 'handlebars',
+    viewsPath: './views/emails',
+    extension: '.hbs',
+    cache: true,
+  },
+  queue: {
+    driver: 'bullmq',
+    connection: { host: 'localhost', port: 6379 },
+    retries: 3,
+    backoff: { type: 'exponential', delay: 1000 },
+  },
+  markdown: {
+    theme: {
+      headerHtml: '<img src="https://example.com/logo.png" alt="Logo">',
+      footerHtml: '<p>&copy; 2026 My Company</p>',
+    },
+  },
+  failover: {
+    chain: ['sendgrid', 'ses'],
+    maxRetriesPerProvider: 2,
+    retryDelay: 1000,
+    failoverDelay: 500,
+    onFailover: (event) => {
+      console.log(`Failover: ${event.failedMailer} → ${event.nextMailer}`);
+    },
+  },
+});
+```

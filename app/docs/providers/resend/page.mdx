@@ -1,0 +1,22 @@
+# Resend Provider
+
+The Resend provider sends emails through the Resend API using the official `resend` package.
+
+## Installation
+
+<PackageManagerTabs command="resend" />
+
+## Configuration
+
+```typescript
+Mail.configure({
+  default: 'resend',
+  from: { address: 'noreply@yourdomain.com', name: 'My App' },
+  mailers: {
+    resend: {
+      driver: 'resend',
+      apiKey: process.env.RESEND_API_KEY!,
+    },
+  },
+});
+```
