@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
+  <defs>
+    <linearGradient id="mailGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6366f1"/>
+      <stop offset="100%" stop-color="#06b6d4"/>
+    </linearGradient>
+  </defs>
+  <!-- Envelope body -->
+  <rect x="2" y="6" width="28" height="20" rx="3" fill="url(#mailGradient)"/>
+  <!-- Envelope flap (V shape) -->
+  <path d="M2 9 L16 18 L30 9" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <!-- Bottom fold lines for depth -->
+  <path d="M2 23 L12 16" stroke="rgba(255,255,255,0.3)" stroke-width="1.5" stroke-linecap="round"/>
+  <path d="M30 23 L20 16" stroke="rgba(255,255,255,0.3)" stroke-width="1.5" stroke-linecap="round"/>
+</svg>
