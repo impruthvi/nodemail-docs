@@ -4,10 +4,6 @@ on:
   push:
     branches: [main]
 
-  # Triggered when nodemail repo publishes new stats
-  repository_dispatch:
-    types: [stats-updated]
-
   # Manual trigger
   workflow_dispatch:
 
@@ -27,44 +23,8 @@ jobs:
       - name: Install dependencies
         run: bun install
 
-      - name: Fetch latest stats
-        run: bun run fetch-stats
-
       - name: Lint
         run: bun run lint
 
       - name: Build
         run: bun run build
-
-  # Deploy via Vercel for repository_dispatch events
-  # (Regular pushes are auto-deployed by Vercel's GitHub integration)
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    if: github.event_name == 'repository_dispatch'
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: latest
-
-      - name: Install dependencies
-        run: bun install
-
-      - name: Fetch latest stats
-        run: bun run fetch-stats
-
-      - name: Build
-        run: bun run build
-
-      - name: Deploy to Vercel
-        uses: amondnet/vercel-action@v25
-        with:
-          vercel-token: ${{ secrets.VERCEL_TOKEN }}
-          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
-          vercel-args: "--prod"
