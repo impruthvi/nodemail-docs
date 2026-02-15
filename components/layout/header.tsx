@@ -38,6 +38,7 @@ export function Header() {
 
   // Avoid hydration mismatch for theme toggle
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Hydration: mark component as mounted
     setMounted(true);
   }, []);
 

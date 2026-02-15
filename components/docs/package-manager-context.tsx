@@ -32,6 +32,7 @@ export function PackageManagerProvider({ children }: { children: ReactNode }) {
       stored === "pnpm" ||
       stored === "bun"
     ) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- Hydration: sync localStorage preference on mount
       setManagerState(stored);
     }
   }, []);

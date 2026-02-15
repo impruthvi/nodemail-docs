@@ -24,6 +24,7 @@ export function TableOfContents({ className }: { className?: string }) {
       text: el.textContent ?? "",
       level: el.tagName === "H2" ? 2 : 3,
     }));
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Hydration: read DOM headings on route change
     setHeadings(items);
     setActiveId("");
   }, [pathname]);

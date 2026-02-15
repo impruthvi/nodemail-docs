@@ -9,7 +9,6 @@ interface CodeBlockProps {
   language?: string;
   filename?: string;
   className?: string;
-  showLineNumbers?: boolean;
 }
 
 export function CodeBlock({
@@ -17,7 +16,6 @@ export function CodeBlock({
   language = "typescript",
   filename,
   className,
-  showLineNumbers = false,
 }: CodeBlockProps) {
   const [copied, setCopied] = useState(false);
   const [html, setHtml] = useState("");
