@@ -125,7 +125,7 @@ export const PROVIDERS: Provider[] = [
 
 // ─── Stats ───────────────────────────────────────────────────────────────────
 // Dynamic stats fetched at build time from the main nodemail repo
-import statsData from "./stats.json";
+import statsData from "../public/stats.json";
 
 export const STATS = [
   { value: statsData.providers, label: "Providers", suffix: "" },
