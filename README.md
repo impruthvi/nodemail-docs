@@ -1,36 +1,117 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Nodemail Documentation
+
+Documentation website for [@impruthvi/nodemail](https://www.npmjs.com/package/@impruthvi/nodemail) — a Laravel-inspired Node.js email library.
+
+**Live site:** [nodemail.impruthvi.me](https://nodemail.impruthvi.me)
+
+## Tech Stack
+
+- **Framework:** Next.js 16 (App Router)
+- **Content:** MDX with remark-gfm
+- **Styling:** Tailwind CSS v4
+- **UI Components:** shadcn/ui (new-york style)
+- **Syntax Highlighting:** Shiki
+- **Animations:** Motion (Framer Motion)
+- **Package Manager:** Bun
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+
+- Node.js 18+
+- Bun (recommended) or npm/yarn/pnpm
+
+### Installation
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
+# Clone the repository
+git clone https://github.com/impruthvi/nodemail-doc.git
+cd nodemail-doc
+
+# Install dependencies
+bun install
+```
+
+### Development
+
+```bash
 bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) to view the site.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Build
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+bun run build
+bun start
+```
 
-## Learn More
+### Lint
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+bun run lint
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Project Structure
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```
+├── app/
+│   ├── docs/           # Documentation pages (MDX)
+│   │   ├── layout.tsx  # Docs layout (sidebar + TOC)
+│   │   └── **/page.mdx # Individual doc pages
+│   ├── page.tsx        # Landing page
+│   └── globals.css     # Global styles
+├── components/
+│   ├── ui/             # shadcn/ui components
+│   ├── layout/         # Header, sidebar, footer, TOC
+│   ├── landing/        # Landing page sections
+│   ├── docs/           # Doc-specific components
+│   ├── search/         # Search dialog (cmdk)
+│   └── effects/        # Visual effects (particles, etc.)
+├── lib/
+│   ├── navigation.ts   # Sidebar navigation config
+│   ├── constants.ts    # Site-wide constants
+│   └── utils.ts        # Utility functions
+├── mdx-components.tsx  # MDX component overrides
+└── DOCUMENT.md         # Source content for docs
+```
 
-## Deploy on Vercel
+## Adding Documentation
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+1. Create a new MDX file at `app/docs/<section>/page.mdx`
+2. Add the navigation entry to `lib/navigation.ts`
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Example MDX page:
+
+```mdx
+# Page Title
+
+## Section Heading
+
+Content goes here...
+```
+
+## Features
+
+- Dark mode (default) with theme switching
+- Responsive sidebar navigation
+- Table of contents with scroll spy
+- Code syntax highlighting with copy button
+- Package manager tabs (npm/yarn/pnpm/bun)
+- Search dialog (Cmd/Ctrl + K)
+- Particle effects and animations
+
+## Documentation Sections
+
+- **Getting Started** — Introduction, Installation, Quick Start
+- **Core Concepts** — Configuration, Sending Emails
+- **Providers** — SMTP, SendGrid, AWS SES, Mailgun, Resend, Postmark
+- **Templates** — Handlebars, EJS, Pug
+- **Advanced** — Markdown Mail, Queue Support, Provider Failover
+- **Testing & Reference** — Testing, Type Reference, Exports, Examples
+- **Resources** — Migration Guide, Troubleshooting
+
+## License
+
+MIT
