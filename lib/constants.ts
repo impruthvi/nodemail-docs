@@ -124,10 +124,13 @@ export const PROVIDERS: Provider[] = [
 ];
 
 // ─── Stats ───────────────────────────────────────────────────────────────────
+// Dynamic stats fetched at build time from the main nodemail repo
+import statsData from "./stats.json";
+
 export const STATS = [
-  { value: 6, label: "Providers", suffix: "" },
-  { value: 269, label: "Tests Passing", suffix: "" },
-  { value: 85, label: "Code Coverage", suffix: "%+" },
+  { value: statsData.providers, label: "Providers", suffix: "" },
+  { value: statsData.tests, label: "Tests Passing", suffix: "" },
+  { value: statsData.coverage, label: "Code Coverage", suffix: "%+" },
 ] as const;
 
 // ─── Code Examples ───────────────────────────────────────────────────────────
