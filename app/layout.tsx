@@ -14,6 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://nodemail.impruthvi.me"),
   title: {
     default: "@impruthvi/nodemail — Email for Node.js, Done Right",
     template: "%s | @impruthvi/nodemail",
