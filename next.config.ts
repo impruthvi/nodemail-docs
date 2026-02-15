@@ -9,6 +9,7 @@ const withMDX = createMDX({
   options: {
     remarkPlugins: ["remark-gfm"],
     rehypePlugins: [
+      "rehype-slug",
       ["@shikijs/rehype", { theme: "catppuccin-mocha" }],
     ],
   },

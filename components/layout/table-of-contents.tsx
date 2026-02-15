@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 
 interface TOCItem {
@@ -12,6 +13,7 @@ interface TOCItem {
 export function TableOfContents({ className }: { className?: string }) {
   const [headings, setHeadings] = useState<TOCItem[]>([]);
   const [activeId, setActiveId] = useState("");
+  const pathname = usePathname();
 
   useEffect(() => {
     const elements = Array.from(
@@ -23,7 +25,8 @@ export function TableOfContents({ className }: { className?: string }) {
       level: el.tagName === "H2" ? 2 : 3,
     }));
     setHeadings(items);
-  }, []);
+    setActiveId("");
+  }, [pathname]);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
