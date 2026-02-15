@@ -2,10 +2,12 @@ import { Header } from "@/components/layout/header";
 import { Sidebar } from "@/components/layout/sidebar";
 import { TableOfContents } from "@/components/layout/table-of-contents";
 import { PackageManagerProvider } from "@/components/docs/package-manager-context";
+import { DocsBreadcrumbSchema } from "@/components/seo/docs-breadcrumb-schema";
 
 export default function DocsLayout({ children }: { children: React.ReactNode }) {
   return (
     <PackageManagerProvider>
+      <DocsBreadcrumbSchema />
       <div className="min-h-screen bg-background">
         <Header />
         <div className="flex max-w-[1440px] mx-auto">
