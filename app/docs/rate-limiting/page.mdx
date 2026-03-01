@@ -1,0 +1,227 @@
+export const metadata = {
+  title: "Rate Limiting",
+  description: "Configurable per-provider rate limiting to prevent exceeding email provider API limits. Uses an in-memory sliding window algorithm.",
+};
+
+# Rate Limiting
+
+Configurable per-provider rate limiting to prevent exceeding email provider API limits. Uses an in-memory sliding window algorithm with no external dependencies.
+
+---
+
+## Overview
+
+Production applications sending high volumes of email need throttling to stay within provider limits (e.g., SendGrid 100/sec, SES 14/sec). Nodemail's rate limiter:
+
+- **Sliding window** — Tracks actual send timestamps, prunes expired entries
+- **Per-mailer** — Each mailer has independent limits
+- **In-memory** — No Redis or external dependencies; resets on process restart
+- **Non-throwing** — Returns `{ success: false, error: '...' }` instead of throwing
+- **Before events** — Rate-limited sends don't fire `sending`/`sent`/`failed` events
+
+---
+
+## Quick Start
+
+```typescript
+import { Mail } from '@impruthvi/nodemail';
+
+Mail.configure({
+  default: 'smtp',
+  from: { address: 'noreply@example.com', name: 'App' },
+  mailers: {
+    smtp: { driver: 'smtp', host: 'localhost', port: 587 },
+  },
+  rateLimit: {
+    maxPerWindow: 100,
+    windowMs: 60000, // 100 emails per minute
+  },
+});
+
+const result = await Mail.to('user@example.com')
+  .subject('Hello')
+  .html('<p>Hi</p>')
+  .send();
+
+if (!result.success) {
+  console.log(result.error);
+  // "Rate limit exceeded for mailer "smtp". Try again in 450ms."
+}
+```
+
+---
+
+## Configuration
+
+### Global Rate Limit
+
+Applies to all mailers unless overridden:
+
+```typescript
+Mail.configure({
+  default: 'smtp',
+  from: { address: 'noreply@example.com', name: 'App' },
+  mailers: {
+    smtp: { driver: 'smtp', host: 'localhost', port: 587 },
+    sendgrid: { driver: 'sendgrid', apiKey: '...' },
+  },
+  rateLimit: {
+    maxPerWindow: 100,
+    windowMs: 60000,
+  },
+});
+```
+
+### Per-Mailer Rate Limit
+
+Per-mailer config takes precedence over the global config:
+
+```typescript
+Mail.configure({
+  default: 'smtp',
+  from: { address: 'noreply@example.com', name: 'App' },
+  mailers: {
+    smtp: {
+      driver: 'smtp',
+      host: 'localhost',
+      port: 587,
+      rateLimit: { maxPerWindow: 10, windowMs: 1000 }, // 10/sec
+    },
+    sendgrid: {
+      driver: 'sendgrid',
+      apiKey: '...',
+      rateLimit: { maxPerWindow: 100, windowMs: 1000 }, // 100/sec
+    },
+  },
+});
+```
+
+### Callback on Rate Limit
+
+Use `onRateLimited` to log or monitor rate limit hits:
+
+```typescript
+Mail.configure({
+  default: 'smtp',
+  from: { address: 'noreply@example.com', name: 'App' },
+  mailers: {
+    smtp: { driver: 'smtp', host: 'localhost', port: 587 },
+  },
+  rateLimit: {
+    maxPerWindow: 10,
+    windowMs: 1000,
+    onRateLimited: (event) => {
+      console.log(`Rate limited on ${event.mailer}, retry in ${event.retryAfterMs}ms`);
+    },
+  },
+});
+```
+
+---
+
+## API Reference
+
+### `RateLimitConfig`
+
+| Property | Type | Required | Description |
+|---|---|---|---|
+| `maxPerWindow` | `number` | Yes | Maximum emails allowed within the window |
+| `windowMs` | `number` | Yes | Window duration in milliseconds |
+| `onRateLimited` | `(event: RateLimitEvent) => void` | No | Callback fired when a send is rate limited |
+
+### `RateLimitEvent`
+
+| Property | Type | Description |
+|---|---|---|
+| `mailer` | `string` | Name of the rate-limited mailer |
+| `retryAfterMs` | `number` | Milliseconds until the next send would be allowed |
+| `options` | `MailOptions` | The email options that were rate limited |
+| `timestamp` | `string` | ISO 8601 timestamp |
+
+### `RateLimiter` class
+
+The `RateLimiter` class is exported for advanced use cases:
+
+```typescript
+import { RateLimiter } from '@impruthvi/nodemail';
+
+const limiter = new RateLimiter();
+
+const result = limiter.check('smtp', { maxPerWindow: 10, windowMs: 1000 });
+if (result.allowed) {
+  // proceed with send
+} else {
+  console.log(`Retry in ${result.retryAfterMs}ms`);
+}
+
+limiter.reset(); // Clear all state
+```
+
+---
+
+## Behavior Details
+
+### Response on Rate Limit
+
+When a send is rate limited, the response follows the standard `MailResponse` pattern:
+
+```typescript
+{
+  success: false,
+  error: 'Rate limit exceeded for mailer "smtp". Try again in 450ms.'
+}
+```
+
+### Event Interaction
+
+Rate limit checks happen **before** events fire. A rate-limited send:
+- Does NOT fire `sending` event
+- Does NOT fire `sent` event
+- Does NOT fire `failed` event
+
+This is intentional — the email was never attempted, so no lifecycle events occur.
+
+### Failover Interaction
+
+Rate limiting is checked on the **primary mailer only**, before failover logic runs. If the primary mailer is rate limited, failover does not kick in.
+
+### Callback Safety
+
+`onRateLimited` callback errors are silently caught and never break the send flow, consistent with the `onFailover` pattern.
+
+---
+
+## Common Provider Limits
+
+| Provider | Typical Limit | Suggested Config |
+|---|---|---|
+| SendGrid | 100/sec | `{ maxPerWindow: 100, windowMs: 1000 }` |
+| AWS SES | 14/sec | `{ maxPerWindow: 14, windowMs: 1000 }` |
+| Mailgun | 100/min | `{ maxPerWindow: 100, windowMs: 60000 }` |
+| Postmark | 50/sec | `{ maxPerWindow: 50, windowMs: 1000 }` |
+| Resend | 10/sec | `{ maxPerWindow: 10, windowMs: 1000 }` |
+| SMTP | Varies | Configure based on your SMTP server limits |
+
+---
+
+## Testing
+
+In test mode (`MailFake`), rate limiting does not apply. `MailFake` bypasses `MailManager.send()` entirely, so you can test email content without rate limit interference.
+
+To test rate limiting behavior itself, use the real `MailManager` with mocked providers:
+
+```typescript
+import { MailManager } from '@impruthvi/nodemail';
+
+const manager = new MailManager({
+  default: 'smtp',
+  from: { address: 'test@test.com', name: 'Test' },
+  mailers: {
+    smtp: { driver: 'smtp', host: 'localhost', port: 587 },
+  },
+  rateLimit: { maxPerWindow: 2, windowMs: 1000 },
+});
+
+// Reset the limiter between tests
+manager.getRateLimiter().reset();
+```

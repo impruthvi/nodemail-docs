@@ -1,0 +1,46 @@
+export const metadata = {
+  title: "Changelog",
+  description: "Release notes and version history for @impruthvi/nodemail.",
+};
+
+# Changelog
+
+All notable changes to `@impruthvi/nodemail` are documented here.
+
+---
+
+## v1.0.1
+
+**5 new features** expanding the library's email capabilities.
+
+- **[Email Events](/docs/email-events)** — Listen to `sending`, `sent`, and `failed` lifecycle events with typed listeners.
+- **[Email Preview](/docs/email-preview)** — Render emails in the browser during development without actually sending them.
+- **[Email Priority](/docs/email-priority)** — Set priority headers (`high`, `normal`, `low`) on outgoing messages.
+- **[Embedded Images](/docs/embedded-images)** — Attach inline images via CID references for rich HTML emails.
+- **[Rate Limiting](/docs/rate-limiting)** — Throttle outgoing email with per-provider rate limits and configurable strategies.
+
+---
+
+## v1.0.0
+
+**Provider Failover** — automatic failover chains with retries, delays, and callbacks.
+
+- `FailoverManager` class for managing provider chains
+- `failover` config option (global and per-mailer)
+- `onFailover` callback for monitoring provider switches
+- `MailResponse` now includes `provider`, `failoverUsed`, `failoverAttempts`
+- Testing utilities: `MailFake.simulateFailures()` / `resetFailures()`
+- `AssertableMessage` failover methods: `wasFailoverUsed()`, `getProvider()`, `getFailoverAttempts()`, `getResponse()`
+
+See the [Provider Failover](/docs/failover) docs and [Migration Guide](/docs/migration) for adoption details.
+
+---
+
+## Earlier Releases
+
+| Version | Key Feature |
+|---------|-------------|
+| v0.7.0  | Markdown Mail — renderer, components, themes |
+| v0.6.0  | Queue support — Bull, BullMQ, sync driver |
+| v0.5.0  | Testing utilities — `Mail.fake()`, assertions, `AssertableMessage` |
+| v0.4.0  | Template engines — Handlebars, EJS, Pug + Mailable classes |

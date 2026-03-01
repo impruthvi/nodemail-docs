@@ -1,0 +1,436 @@
+export const metadata = {
+  title: "Email Events",
+  description: "Hook into sending, sent, and failed events for logging, analytics, modifying emails before send, or cancelling sends entirely.",
+};
+
+# Email Events
+
+Hook into the email lifecycle with `sending`, `sent`, and `failed` events. Use events for logging, analytics, modifying emails before send, or cancelling sends entirely.
+
+---
+
+## Overview
+
+Nodemail fires events at key points during email delivery:
+
+1. **`sending`** — Before the email is sent. Listeners can modify options or cancel the send.
+2. **`sent`** — After a successful send. Listeners receive the response.
+3. **`failed`** — When a send fails (provider error or `success: false` response).
+
+**Design principles:**
+- Callback arrays (not EventEmitter) — lightweight, matches existing `onFailover` pattern
+- Listener errors are silently caught — events never break email delivery
+- Events fire in both real and fake mode — essential for testing event-driven behavior
+- Queue sends fire events automatically — `processQueue` calls `send()` internally
+
+---
+
+## Quick Start
+
+```typescript
+import { Mail } from '@impruthvi/nodemail';
+
+// Log all outgoing emails
+Mail.onSending((event) => {
+  console.log(`Sending to ${event.options.to} via ${event.mailer}`);
+});
+
+// Log successful deliveries
+Mail.onSent((event) => {
+  console.log(`Sent! ID: ${event.response.messageId}`);
+});
+
+// Log failures
+Mail.onFailed((event) => {
+  console.error(`Failed: ${event.error}`);
+});
+```
+
+---
+
+## API Reference
+
+### `Mail.onSending(listener)`
+
+Register a listener that fires before each email is sent.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `listener` | `SendingListener` | `(event: SendingEvent) => boolean \| void \| Promise<boolean \| void>` |
+
+The listener receives a `SendingEvent`:
+
+```typescript
+interface SendingEvent {
+  options: MailOptions;  // Mutable — changes propagate to the send
+  mailer: string;        // Name of the mailer being used
+  timestamp: string;     // ISO 8601 timestamp
+}
+```
+
+**Return `false` to cancel the send.** Any other return value (or no return) allows the send to proceed.
+
+### `Mail.onSent(listener)`
+
+Register a listener that fires after a successful send.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `listener` | `SentListener` | `(event: SentEvent) => void \| Promise<void>` |
+
+```typescript
+interface SentEvent {
+  options: MailOptions;    // The options that were sent
+  response: MailResponse;  // The provider response
+  mailer: string;          // Name of the mailer
+  timestamp: string;       // ISO 8601 timestamp
+}
+```
+
+### `Mail.onFailed(listener)`
+
+Register a listener that fires when a send fails.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `listener` | `SendFailedListener` | `(event: SendFailedEvent) => void \| Promise<void>` |
+
+```typescript
+interface SendFailedEvent {
+  options: MailOptions;       // The options that failed
+  error: Error | string;      // The error
+  mailer: string;             // Name of the mailer
+  timestamp: string;          // ISO 8601 timestamp
+}
+```
+
+### `Mail.clearListeners()`
+
+Remove all registered event listeners.
+
+```typescript
+Mail.clearListeners();
+```
+
+---
+
+## Usage Patterns
+
+### Pattern 1: Logging
+
+```typescript
+Mail.onSending((event) => {
+  console.log(`[Mail] Sending "${event.options.subject}" to ${event.options.to}`);
+});
+
+Mail.onSent((event) => {
+  console.log(`[Mail] Delivered: ${event.response.messageId}`);
+});
+
+Mail.onFailed((event) => {
+  console.error(`[Mail] Failed to send to ${event.options.to}: ${event.error}`);
+});
+```
+
+### Pattern 2: Add Tracking Headers
+
+```typescript
+Mail.onSending((event) => {
+  event.options.headers = {
+    ...event.options.headers,
+    'X-Tracking-Id': crypto.randomUUID(),
+    'X-Sent-At': new Date().toISOString(),
+  };
+});
+```
+
+### Pattern 3: Block Specific Recipients
+
+```typescript
+Mail.onSending((event) => {
+  const blocked = ['blocked@example.com', 'spam@example.com'];
+  const to = Array.isArray(event.options.to) ? event.options.to : [event.options.to];
+  const recipients = to.map((r) => (typeof r === 'string' ? r : r.address));
+
+  if (recipients.some((r) => blocked.includes(r))) {
+    return false; // Cancel the send
+  }
+});
+```
+
+### Pattern 4: Analytics
+
+```typescript
+const emailStats = { sent: 0, failed: 0 };
+
+Mail.onSent(() => { emailStats.sent++; });
+Mail.onFailed(() => { emailStats.failed++; });
+```
+
+### Pattern 5: Async Listeners
+
+Listeners can be async. They are awaited in order before proceeding.
+
+```typescript
+Mail.onSent(async (event) => {
+  await db.insert('email_log', {
+    to: event.options.to,
+    subject: event.options.subject,
+    messageId: event.response.messageId,
+    sentAt: event.timestamp,
+  });
+});
+```
+
+### Pattern 6: MailManager Direct Usage
+
+Events are also available on `MailManager` instances:
+
+```typescript
+import { MailManager } from '@impruthvi/nodemail';
+
+const manager = new MailManager(config);
+
+manager.onSending((event) => {
+  console.log(`Sending via ${event.mailer}`);
+});
+
+manager.onSent((event) => {
+  console.log(`Sent: ${event.response.messageId}`);
+});
+
+manager.onFailed((event) => {
+  console.error(`Failed: ${event.error}`);
+});
+
+manager.clearListeners();
+```
+
+---
+
+## Cancellation
+
+Return `false` from any `sending` listener to cancel the send. The response will be:
+
+```typescript
+{ success: false, error: 'Send cancelled by sending listener' }
+```
+
+Multiple listeners are evaluated in registration order. If any returns `false`, the send is cancelled and subsequent listeners are not called.
+
+```typescript
+Mail.onSending(() => {
+  // First listener — allows send
+});
+
+Mail.onSending((event) => {
+  if (event.options.to === 'blocked@example.com') {
+    return false; // Cancel
+  }
+});
+
+Mail.onSending(() => {
+  // Not called if previous listener returned false
+});
+```
+
+---
+
+## Option Mutation
+
+The `event.options` object in `sending` listeners is mutable. Changes propagate to the actual send:
+
+```typescript
+Mail.onSending((event) => {
+  // Add a BCC to every email
+  const existing = event.options.bcc;
+  event.options.bcc = existing
+    ? [].concat(existing as any, 'archive@example.com')
+    : 'archive@example.com';
+});
+```
+
+---
+
+## Error Handling
+
+Listener errors are silently caught and never break email delivery:
+
+```typescript
+Mail.onSending(() => {
+  throw new Error('This will not prevent the email from sending');
+});
+
+// Email still sends successfully
+await Mail.to('user@example.com').subject('Hello').html('<p>Hi</p>').send();
+```
+
+---
+
+## Testing
+
+### Events in Fake Mode
+
+Events fire in fake mode, making them testable:
+
+```typescript
+describe('Email Events', () => {
+  beforeEach(() => {
+    Mail.configure(config);
+    Mail.fake();
+  });
+
+  afterEach(() => {
+    Mail.restore();
+  });
+
+  it('fires sending and sent events', async () => {
+    const events: string[] = [];
+    Mail.onSending(() => { events.push('sending'); });
+    Mail.onSent(() => { events.push('sent'); });
+
+    await Mail.to('user@example.com').subject('Test').html('<p>Hi</p>').send();
+
+    expect(events).toEqual(['sending', 'sent']);
+  });
+
+  it('cancels send via listener', async () => {
+    Mail.onSending(() => false);
+
+    const result = await Mail.to('user@example.com')
+      .subject('Test')
+      .html('<p>Hi</p>')
+      .send();
+
+    expect(result.success).toBe(false);
+    expect(result.error).toBe('Send cancelled by sending listener');
+    Mail.assertNothingSent();
+  });
+});
+```
+
+### `getFiredEvents()`
+
+The `MailFake` instance tracks all fired events for test assertions:
+
+```typescript
+const fake = Mail.fake();
+
+await Mail.to('user@example.com').subject('Test').html('<p>Hi</p>').send();
+
+const events = fake.getFiredEvents();
+// [
+//   { type: 'sending', event: { options: {...}, mailer: 'fake', timestamp: '...' } },
+//   { type: 'sent', event: { options: {...}, response: {...}, mailer: 'fake', timestamp: '...' } },
+// ]
+
+expect(events).toHaveLength(2);
+expect(events[0].type).toBe('sending');
+expect(events[1].type).toBe('sent');
+```
+
+### `clear()` Resets Events
+
+Calling `clear()` on the fake instance resets fired events and listeners:
+
+```typescript
+const fake = Mail.fake();
+
+Mail.onSending(() => {});
+await fake.send(options);
+
+fake.clear(); // Resets firedEvents, listeners, sentMessages, etc.
+
+expect(fake.getFiredEvents()).toEqual([]);
+```
+
+---
+
+## Event Flow
+
+### Successful Send
+
+```
+send() called
+  → preprocess (markdown, priority, template)
+  → fire 'sending' event
+    → if any listener returns false → return { success: false }
+    → apply option mutations
+  → provider.send(options)
+  → fire 'sent' event
+  → return response
+```
+
+### Failed Send (Provider Error)
+
+```
+send() called
+  → preprocess
+  → fire 'sending' event
+  → provider.send(options) → throws Error
+  → fire 'failed' event
+  → re-throw error
+```
+
+### Failed Send (success: false Response)
+
+```
+send() called
+  → preprocess
+  → fire 'sending' event
+  → provider.send(options) → { success: false, error: '...' }
+  → fire 'failed' event
+  → return response
+```
+
+---
+
+## Type Reference
+
+```typescript
+// Event interfaces
+interface SendingEvent {
+  options: MailOptions;
+  mailer: string;
+  timestamp: string;
+}
+
+interface SentEvent {
+  options: MailOptions;
+  response: MailResponse;
+  mailer: string;
+  timestamp: string;
+}
+
+interface SendFailedEvent {
+  options: MailOptions;
+  error: Error | string;
+  mailer: string;
+  timestamp: string;
+}
+
+// Listener types
+type SendingListener = (event: SendingEvent) => boolean | void | Promise<boolean | void>;
+type SentListener = (event: SentEvent) => void | Promise<void>;
+type SendFailedListener = (event: SendFailedEvent) => void | Promise<void>;
+
+// Fired event (for MailFake testing)
+type FiredEvent =
+  | { type: 'sending'; event: SendingEvent }
+  | { type: 'sent'; event: SentEvent }
+  | { type: 'failed'; event: SendFailedEvent };
+```
+
+---
+
+## Available On
+
+The event methods are available on:
+
+| Class | Methods | Notes |
+|-------|---------|-------|
+| `Mail` (facade) | `onSending()`, `onSent()`, `onFailed()`, `clearListeners()` | Routes to fake or real instance |
+| `MailManager` | `onSending()`, `onSent()`, `onFailed()`, `clearListeners()` | Per-instance listeners |
+| `MailFake` | `onSending()`, `onSent()`, `onFailed()`, `clearListeners()`, `getFiredEvents()` | Includes event history tracking |
+
+**Note:** `Mail.mailer()` creates a new `MailManager` instance — listeners registered on the facade do not carry over to mailer-specific instances. This is by design (per-mailer scope).

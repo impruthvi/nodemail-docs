@@ -5,6 +5,9 @@ import {
   Shield,
   TestTube,
   FileText,
+  Bell,
+  Eye,
+  Gauge,
   type LucideIcon,
 } from "lucide-react";
 
@@ -66,6 +69,27 @@ export const FEATURES: Feature[] = [
     description:
       "Mail.fake() with Laravel-style assertions. Assert sent, queued, and simulate failures.",
     gradient: "from-violet-500 to-purple-500",
+  },
+  {
+    icon: Bell,
+    title: "Email Events",
+    description:
+      "Hook into sending, sent, and failed events for logging, analytics, and send cancellation.",
+    gradient: "from-sky-500 to-blue-500",
+  },
+  {
+    icon: Eye,
+    title: "Email Preview",
+    description:
+      "Preview fully rendered emails without sending. Debug templates and verify headers.",
+    gradient: "from-fuchsia-500 to-pink-500",
+  },
+  {
+    icon: Gauge,
+    title: "Rate Limiting",
+    description:
+      "Per-provider sliding window rate limiting. Stay within API limits automatically.",
+    gradient: "from-red-500 to-orange-500",
   },
 ];
 

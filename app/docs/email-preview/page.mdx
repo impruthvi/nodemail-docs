@@ -1,0 +1,187 @@
+export const metadata = {
+  title: "Email Preview",
+  description: "Preview fully rendered emails without sending. Debug templates, verify headers, and build email preview UIs.",
+};
+
+# Email Preview
+
+Preview emails (rendered HTML/text with all preprocessing applied) without actually sending them. Useful for debugging templates, verifying markdown rendering, checking priority headers, and building email preview UIs.
+
+---
+
+## Overview
+
+`preview()` runs the full preprocessing pipeline — markdown rendering, priority-to-header conversion, template rendering — then returns a `PreviewResult` instead of calling the mail provider.
+
+**Design principles:**
+- No side effects — no events fired, no messages stored, no provider called
+- Full preprocessing — markdown, templates, and priority headers are all applied
+- Works in fake mode — `MailFake.preview()` handles priority headers for testing
+- Default `from` merged — preview includes the configured `from` address for complete rendering
+
+---
+
+## Quick Start
+
+```typescript
+import { Mail } from '@impruthvi/nodemail';
+
+// Preview via fluent builder
+const preview = await Mail.to('user@example.com')
+  .subject('Hello')
+  .html('<p>Hi</p>')
+  .preview();
+
+console.log(preview.html);     // '<p>Hi</p>'
+console.log(preview.subject);  // 'Hello'
+console.log(preview.to);       // 'user@example.com'
+console.log(preview.from);     // { address: 'noreply@test.com', name: 'Test App' }
+```
+
+---
+
+## API Reference
+
+### `Mail.to(...).preview()`
+
+Preview an email built with the fluent API. Returns a `PreviewResult` without sending.
+
+```typescript
+const preview = await Mail.to('user@example.com')
+  .subject('Welcome!')
+  .html('<h1>Welcome</h1>')
+  .text('Welcome')
+  .cc('cc@example.com')
+  .bcc('bcc@example.com')
+  .priority('high')
+  .attachments([{ filename: 'file.txt', content: 'hello' }])
+  .preview();
+```
+
+### `Mail.preview(mailable)`
+
+Preview a Mailable class without sending.
+
+```typescript
+import { Mailable } from '@impruthvi/nodemail';
+
+class WelcomeMail extends Mailable {
+  build() {
+    return this
+      .subject('Welcome!')
+      .html('<h1>Welcome</h1>')
+      .priority('high');
+  }
+}
+
+const preview = await Mail.preview(new WelcomeMail().to('user@example.com'));
+console.log(preview.headers);  // { 'X-Priority': '1', 'X-MSMail-Priority': 'High', 'Importance': 'high' }
+```
+
+### `mailable.preview()`
+
+Preview from a Mailable instance directly (requires `setMailManager()` or use via `Mail.preview()`).
+
+```typescript
+const mailable = new WelcomeMail().to('user@example.com');
+mailable.setMailManager(manager);
+const preview = await mailable.preview();
+```
+
+### `manager.preview(options)`
+
+Preview via `MailManager` directly.
+
+```typescript
+const preview = await manager.preview({
+  to: 'user@example.com',
+  subject: 'Test',
+  html: '<p>Hello</p>',
+  priority: 'high',
+});
+```
+
+---
+
+## PreviewResult
+
+```typescript
+interface PreviewResult {
+  html?: string;
+  text?: string;
+  subject?: string;
+  from?: string | MailAddress | MailAddress[];
+  to: string | string[] | MailAddress | MailAddress[];
+  cc?: string | string[] | MailAddress | MailAddress[];
+  bcc?: string | string[] | MailAddress | MailAddress[];
+  headers?: Record<string, string>;
+  attachments?: Attachment[];
+}
+```
+
+---
+
+## Testing
+
+Preview works seamlessly with `Mail.fake()`. Importantly, previewing does **not** store any messages or fire any events.
+
+```typescript
+import { Mail } from '@impruthvi/nodemail';
+
+Mail.fake();
+
+const preview = await Mail.to('user@example.com')
+  .subject('Hello')
+  .html('<p>Hi</p>')
+  .priority('high')
+  .preview();
+
+// Preview returns the result
+expect(preview.headers['X-Priority']).toBe('1');
+
+// But nothing was "sent"
+Mail.assertNothingSent();
+Mail.assertNothingQueued();
+
+// And no events were fired
+expect(Mail.getFake().getFiredEvents()).toHaveLength(0);
+```
+
+---
+
+## Use Cases
+
+### Debugging templates
+
+```typescript
+const preview = await Mail.to('user@example.com')
+  .template('welcome')
+  .data({ name: 'Alice', plan: 'Pro' })
+  .subject('Welcome!')
+  .preview();
+
+console.log(preview.html);  // Fully rendered HTML from template
+```
+
+### Building email preview UIs
+
+```typescript
+app.get('/emails/:id/preview', async (req, res) => {
+  const mailable = getMailableForId(req.params.id);
+  const preview = await Mail.preview(mailable);
+  res.json(preview);
+});
+```
+
+### Verifying priority headers
+
+```typescript
+const preview = await Mail.to('user@example.com')
+  .subject('Urgent')
+  .html('<p>Action needed</p>')
+  .priority('high')
+  .preview();
+
+console.log(preview.headers);
+// { 'X-Priority': '1', 'X-MSMail-Priority': 'High', 'Importance': 'high' }
+```

@@ -1,0 +1,266 @@
+export const metadata = {
+  title: "Embedded Images",
+  description: "Embed images directly into HTML emails using Content-ID (CID) references. Ensures reliable image display across all email clients.",
+};
+
+# Embedded Images (CID Support)
+
+Embed images directly into your HTML emails using Content-ID (CID) references. This ensures images display reliably without depending on external URLs — ideal for company logos, banners, and branding assets.
+
+---
+
+## Overview
+
+When you send an HTML email with `<img src="https://...">`, the image may be blocked by email clients or fail to load. CID (Content-ID) embedding attaches the image directly to the email and references it inline, so it always displays.
+
+**How it works:**
+1. You attach an image with a unique CID identifier
+2. You reference it in HTML with `<img src="cid:identifier" />`
+3. The email client renders the image inline from the attachment
+
+**No extra dependencies required** — this uses the existing `Attachment` type's `cid` field, which is natively supported by SMTP (Nodemailer) and API providers (SendGrid, Mailgun, etc.).
+
+---
+
+## Quick Start
+
+```typescript
+import { Mail } from '@impruthvi/nodemail';
+
+await Mail.to('user@example.com')
+  .subject('Welcome!')
+  .embedImage('./assets/logo.png', 'logo')
+  .html('<img src="cid:logo" alt="Logo" /><p>Welcome aboard!</p>')
+  .send();
+```
+
+---
+
+## API Reference
+
+### `embedImage(filePath, cid, filename?)`
+
+Embed an image from a file path.
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `filePath` | `string` | Yes | Path to the image file |
+| `cid` | `string` | Yes | Unique Content-ID used in `<img src="cid:...">` |
+| `filename` | `string` | No | Override the attachment filename (defaults to the file's basename) |
+
+```typescript
+// Basic usage
+message.embedImage('/path/to/logo.png', 'logo');
+
+// With custom filename
+message.embedImage('/path/to/logo.png', 'logo', 'company-logo.png');
+```
+
+**MIME type inference:** The content type is automatically inferred from the file extension:
+
+| Extension | Content Type |
+|-----------|-------------|
+| `.png` | `image/png` |
+| `.jpg`, `.jpeg` | `image/jpeg` |
+| `.gif` | `image/gif` |
+| `.svg` | `image/svg+xml` |
+| `.webp` | `image/webp` |
+| `.bmp` | `image/bmp` |
+| `.ico` | `image/x-icon` |
+
+Unknown extensions fall back to `application/octet-stream`.
+
+---
+
+### `embedImageData(content, cid, contentType, filename?)`
+
+Embed an image from a Buffer or string (e.g., dynamically generated images).
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `content` | `Buffer \| string` | Yes | The image data |
+| `cid` | `string` | Yes | Unique Content-ID used in `<img src="cid:...">` |
+| `contentType` | `string` | Yes | MIME type (e.g., `image/png`) |
+| `filename` | `string` | No | Override the attachment filename (defaults to `{cid}.{ext}`) |
+
+```typescript
+import * as fs from 'fs';
+
+const logoBuffer = fs.readFileSync('./assets/logo.png');
+
+message.embedImageData(logoBuffer, 'logo', 'image/png');
+
+// With custom filename
+message.embedImageData(logoBuffer, 'logo', 'image/png', 'brand-logo.png');
+
+// SVG as string
+message.embedImageData('<svg>...</svg>', 'icon', 'image/svg+xml');
+```
+
+---
+
+## Usage Patterns
+
+### Pattern 1: Fluent Builder
+
+Use `Mail.to()` to chain embed calls directly:
+
+```typescript
+await Mail.to('user@example.com')
+  .subject('Monthly Newsletter')
+  .embedImage('./assets/logo.png', 'logo')
+  .embedImage('./assets/banner.jpg', 'banner')
+  .embedImageData(qrCodeBuffer, 'qr', 'image/png')
+  .html(`
+    <img src="cid:logo" alt="Company Logo" />
+    <img src="cid:banner" alt="Banner" />
+    <p>Scan this QR code:</p>
+    <img src="cid:qr" alt="QR Code" />
+  `)
+  .send();
+```
+
+### Pattern 2: Mailable Class
+
+Use `embedImage()` and `embedImageData()` as protected methods inside your `Mailable` subclass:
+
+```typescript
+import { Mailable } from '@impruthvi/nodemail';
+
+class WelcomeEmail extends Mailable {
+  constructor(private user: { name: string }) {
+    super();
+  }
+
+  build(): this {
+    return this
+      .subject(`Welcome, ${this.user.name}!`)
+      .from('noreply@example.com')
+      .embedImage('./assets/logo.png', 'logo')
+      .embedImage('./assets/welcome-banner.jpg', 'banner')
+      .html(`
+        <div style="text-align: center;">
+          <img src="cid:logo" alt="Logo" width="120" />
+        </div>
+        <img src="cid:banner" alt="Welcome" width="600" />
+        <h1>Welcome, ${this.user.name}!</h1>
+      `);
+  }
+}
+
+await Mail.to('user@example.com').send(new WelcomeEmail({ name: 'John' }));
+```
+
+### Pattern 3: Mixed Attachments and Embeds
+
+Embedded images and regular attachments coexist seamlessly:
+
+```typescript
+await Mail.to('user@example.com')
+  .subject('Invoice #1234')
+  .embedImage('./assets/logo.png', 'logo')
+  .attachments([{ filename: 'invoice.pdf', path: './invoices/1234.pdf' }])
+  .html(`
+    <img src="cid:logo" alt="Logo" />
+    <p>Please find your invoice attached.</p>
+  `)
+  .send();
+```
+
+### Pattern 4: MailManager Direct Usage
+
+Works with `MailManager.to()` as well:
+
+```typescript
+import { MailManager } from '@impruthvi/nodemail';
+
+const manager = new MailManager(config);
+
+await manager.to('user@example.com')
+  .subject('Report')
+  .embedImage('./assets/logo.png', 'logo')
+  .html('<img src="cid:logo" /><p>See report below.</p>')
+  .send();
+```
+
+---
+
+## Testing
+
+### Assertion Helpers
+
+When using `Mail.fake()`, the `AssertableMessage` class provides helpers for verifying embedded images:
+
+| Method | Signature | Description |
+|--------|-----------|-------------|
+| `hasEmbeddedImage()` | `hasEmbeddedImage(cid: string): boolean` | Check if an image with the given CID is embedded |
+| `getEmbeddedImages()` | `getEmbeddedImages(): Attachment[]` | Get all embedded image attachments (those with a CID) |
+| `embeddedImageCount()` | `embeddedImageCount(): number` | Get the count of embedded images |
+
+### Example Test
+
+```typescript
+import { Mail } from '@impruthvi/nodemail';
+import { WelcomeEmail } from './mailables/WelcomeEmail';
+
+describe('WelcomeEmail', () => {
+  beforeEach(() => {
+    Mail.fake();
+  });
+
+  afterEach(() => {
+    Mail.restore();
+  });
+
+  it('should embed the company logo', async () => {
+    await Mail.to('user@example.com').send(new WelcomeEmail({ name: 'John' }));
+
+    Mail.assertSent(WelcomeEmail, (msg) => {
+      return msg.hasEmbeddedImage('logo')
+        && msg.embeddedImageCount() === 1
+        && msg.htmlContains('cid:logo');
+    });
+  });
+
+  it('should embed multiple images', async () => {
+    await Mail.to('user@example.com').send(new BrandedEmail());
+
+    Mail.assertSent(BrandedEmail, (msg) => {
+      const images = msg.getEmbeddedImages();
+      return images.length === 2
+        && msg.hasEmbeddedImage('logo')
+        && msg.hasEmbeddedImage('banner');
+    });
+  });
+});
+```
+
+---
+
+## Provider Compatibility
+
+CID embedding works across all supported providers:
+
+| Provider | CID Support | Notes |
+|----------|-------------|-------|
+| **SMTP (Nodemailer)** | Native | Sets `Content-Disposition: inline` automatically |
+| **SendGrid** | Supported | Inline attachments via API |
+| **AWS SES** | Supported | Via raw email MIME structure |
+| **Mailgun** | Supported | Inline attachments via API |
+| **Resend** | Supported | Inline attachments via API |
+| **Postmark** | Supported | Inline attachments via API |
+
+No provider-specific configuration is needed. Attachments with a `cid` field are passed through as-is to each provider.
+
+---
+
+## Available In
+
+Both `embedImage()` and `embedImageData()` are available on:
+
+| Class | Access | Usage |
+|-------|--------|-------|
+| `Message` | Public | Low-level message building |
+| `Mailable` | Protected | Use in `build()` method of mailable subclasses |
+| `MessageBuilder` | Public | `MailManager.to().embedImage()` |
+| `FakeableMessageBuilder` | Public | `Mail.to().embedImage()` |

@@ -1,0 +1,223 @@
+export const metadata = {
+  title: "Email Priority",
+  description: "Set email priority/importance headers with a simple priority() method. Supports high, normal, and low levels across all providers.",
+};
+
+# Email Priority Levels
+
+Set email priority/importance headers with a simple `priority()` method. This ensures all three standard priority headers (`X-Priority`, `X-MSMail-Priority`, `Importance`) are set correctly and consistently.
+
+---
+
+## Overview
+
+Email clients recognize priority headers to flag messages as urgent or low-importance. Manually setting these headers requires knowing three different header formats. The `priority()` method handles this automatically.
+
+**How it works:**
+1. You call `.priority('high')`, `.priority('normal')`, or `.priority('low')`
+2. The priority level is stored as first-class data in `MailOptions`
+3. When sending, `MailManager` converts it to the correct headers for all email clients
+
+**Header mapping:**
+
+| Priority | `X-Priority` | `X-MSMail-Priority` | `Importance` |
+|----------|-------------|---------------------|-------------|
+| `high`   | `1`         | `High`              | `high`      |
+| `normal` | `3`         | `Normal`            | `normal`    |
+| `low`    | `5`         | `Low`               | `low`       |
+
+---
+
+## Quick Start
+
+```typescript
+import { Mail } from '@impruthvi/nodemail';
+
+await Mail.to('user@example.com')
+  .subject('Urgent: Action Required')
+  .priority('high')
+  .html('<p>Please respond immediately.</p>')
+  .send();
+```
+
+---
+
+## API Reference
+
+### `priority(level)`
+
+Set the email priority level.
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `level` | `'high' \| 'normal' \| 'low'` | Yes | The priority level |
+
+Returns `this` for method chaining.
+
+---
+
+## Usage Patterns
+
+### Pattern 1: Fluent Builder
+
+```typescript
+await Mail.to('user@example.com')
+  .subject('Urgent')
+  .priority('high')
+  .html('<p>Action required!</p>')
+  .send();
+```
+
+### Pattern 2: Mailable Class
+
+```typescript
+import { Mailable } from '@impruthvi/nodemail';
+
+class AlertEmail extends Mailable {
+  constructor(private message: string) {
+    super();
+  }
+
+  build(): this {
+    return this
+      .subject('System Alert')
+      .priority('high')
+      .html(`<h1>Alert</h1><p>${this.message}</p>`);
+  }
+}
+
+await Mail.to('admin@example.com').send(new AlertEmail('Server load critical'));
+```
+
+### Pattern 3: Low-Priority Notifications
+
+```typescript
+await Mail.to('user@example.com')
+  .subject('Weekly Digest')
+  .priority('low')
+  .html('<p>Here is your weekly summary...</p>')
+  .send();
+```
+
+### Pattern 4: MailManager Direct Usage
+
+```typescript
+import { MailManager } from '@impruthvi/nodemail';
+
+const manager = new MailManager(config);
+
+await manager.to('user@example.com')
+  .subject('Important Update')
+  .priority('high')
+  .html('<p>Please review.</p>')
+  .send();
+```
+
+### Pattern 5: Message Class (Low-Level)
+
+```typescript
+import { Message } from '@impruthvi/nodemail';
+
+const message = new Message();
+message
+  .to('user@example.com')
+  .subject('Urgent')
+  .priority('high')
+  .html('<p>Action required!</p>');
+
+const options = message.toOptions();
+// options.priority === 'high'
+```
+
+---
+
+## Header Override Behavior
+
+User-provided headers take precedence over priority-generated headers. This allows fine-grained control when needed:
+
+```typescript
+await Mail.to('user@example.com')
+  .subject('Custom Priority')
+  .priority('high')
+  .headers({ 'X-Priority': '2' }) // Overrides the '1' from 'high'
+  .html('<p>Hello</p>')
+  .send();
+
+// Result headers:
+// X-Priority: '2'          (user override wins)
+// X-MSMail-Priority: 'High' (from priority)
+// Importance: 'high'        (from priority)
+```
+
+---
+
+## Testing
+
+### Assertion Helpers
+
+When using `Mail.fake()`, the `AssertableMessage` class provides helpers for verifying priority:
+
+| Method | Signature | Description |
+|--------|-----------|-------------|
+| `hasPriority()` | `hasPriority(level: 'high' \| 'normal' \| 'low'): boolean` | Check if the message has a specific priority level |
+| `getPriority()` | `getPriority(): 'high' \| 'normal' \| 'low' \| undefined` | Get the priority level (or `undefined` if not set) |
+
+### Example Test
+
+```typescript
+import { Mail } from '@impruthvi/nodemail';
+import { AlertEmail } from './mailables/AlertEmail';
+
+describe('AlertEmail', () => {
+  beforeEach(() => {
+    Mail.fake();
+  });
+
+  afterEach(() => {
+    Mail.restore();
+  });
+
+  it('should send with high priority', async () => {
+    await Mail.to('admin@example.com').send(new AlertEmail('Critical'));
+
+    Mail.assertSent(AlertEmail, (msg) => {
+      return msg.hasPriority('high') && msg.hasSubject('System Alert');
+    });
+  });
+
+  it('should have correct priority level', async () => {
+    await Mail.to('admin@example.com').send(new AlertEmail('Warning'));
+
+    const sent = Mail.sent(AlertEmail)[0];
+    expect(sent.getPriority()).toBe('high');
+  });
+});
+```
+
+---
+
+## Provider Compatibility
+
+Priority headers work across all supported providers:
+
+| Provider | Priority Support | Notes |
+|----------|-----------------|-------|
+| **SMTP (Nodemailer)** | Full | All three headers passed through natively |
+| **SendGrid** | Full | Custom headers supported via API |
+| **Mailgun** | Full | Custom headers supported via API |
+| **Resend** | Full | Custom headers supported via API |
+| **Postmark** | Full | Custom headers supported via API |
+| **AWS SES** | Partial | SES simple API does not support custom headers; use raw email mode for priority headers |
+
+---
+
+## Available In
+
+The `priority()` method is available on:
+
+| Class | Access | Usage |
+|-------|--------|-------|
+| `Message` | Public | Low-level message building |
+| `Mailable` | Protected | Use in `build()` method of mailable subclasses |
+| `MessageBuilder` | Public | `MailManager.to().priority()` |
+| `FakeableMessageBuilder` | Public | `Mail.to().priority()` |

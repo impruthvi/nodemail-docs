@@ -13,6 +13,9 @@ const GLOW_COLORS: Record<string, string> = {
   "from-pink-500 to-rose-500": "oklch(0.7 0.15 340 / 15%)",
   "from-emerald-500 to-green-500": "oklch(0.7 0.18 160 / 15%)",
   "from-violet-500 to-purple-500": "oklch(0.627 0.265 303 / 15%)",
+  "from-sky-500 to-blue-500": "oklch(0.65 0.2 240 / 15%)",
+  "from-fuchsia-500 to-pink-500": "oklch(0.65 0.25 320 / 15%)",
+  "from-red-500 to-orange-500": "oklch(0.7 0.2 30 / 15%)",
 };
 
 const containerVariants = {
