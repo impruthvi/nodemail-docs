@@ -54,13 +54,18 @@ export function MobileNav() {
                           href={item.href}
                           onClick={() => setOpen(false)}
                           className={cn(
-                            "block py-1.5 px-3 text-sm rounded-md transition-colors",
+                            "flex items-center py-1.5 px-3 text-sm rounded-md transition-colors",
                             pathname === item.href
                               ? "text-primary bg-primary/10 font-medium"
                               : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
                           )}
                         >
                           {item.title}
+                          {item.badge && (
+                            <span className="ml-2 px-1.5 py-0.5 text-[10px] font-semibold uppercase rounded-full bg-indigo-500/15 text-indigo-400 border border-indigo-500/20">
+                              {item.badge}
+                            </span>
+                          )}
                         </Link>
                       </li>
                     ))}
