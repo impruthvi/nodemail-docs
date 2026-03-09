@@ -79,7 +79,7 @@ export function Hero() {
             >
               <Link href="/docs/changelog" className="relative inline-flex items-center gap-2 px-4 py-1.5 mb-8 rounded-full border border-white/10 bg-white/[0.03] text-sm text-muted-foreground overflow-hidden hover:border-white/20 hover:bg-white/[0.06] transition-all duration-300">
                 <span className="relative z-10">
-                  v1.1.2 &mdash; Queue Compatibility Fix
+                  v1.1.6 &mdash; Postinstall Thank-You Message
                 </span>
                 {/* Shimmer effect */}
                 <div className="absolute inset-0 -translate-x-full animate-shimmer bg-gradient-to-r from-transparent via-white/[0.07] to-transparent" />

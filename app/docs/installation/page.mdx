@@ -11,6 +11,8 @@ export const metadata = {
 
 The base package includes SMTP support via Nodemailer (~25 MB). All other providers and features are optional peer dependencies — install only what you need.
 
+> **Note:** After installation you'll see a short thank-you message from the postinstall script. It is automatically suppressed in CI environments. To disable it manually, set `NODEMAIL_NO_POSTINSTALL=1` in your environment.
+
 ## Provider Add-ons
 
 <PackageManagerTabs command="@sendgrid/mail" label="SendGrid" />
