@@ -3,6 +3,8 @@ import { Sidebar } from "@/components/layout/sidebar";
 import { TableOfContents } from "@/components/layout/table-of-contents";
 import { PackageManagerProvider } from "@/components/docs/package-manager-context";
 import { DocsBreadcrumbSchema } from "@/components/seo/docs-breadcrumb-schema";
+import { DocFooter } from "@/components/docs/doc-footer";
+import { VersionBanner } from "@/components/docs/version-banner";
 
 export default function DocsLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -18,7 +20,9 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
 
           {/* Main content */}
           <main className="flex-1 min-w-0 px-6 md:px-10 py-10 max-w-3xl">
+            <VersionBanner />
             <div className="mdx-content">{children}</div>
+            <DocFooter />
           </main>
 
           {/* Table of contents */}

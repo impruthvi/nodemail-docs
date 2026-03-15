@@ -1,41 +1,88 @@
 import Link from "next/link";
+import {
+  FileQuestion,
+  ArrowLeft,
+  BookOpen,
+  Rocket,
+  Server,
+  Settings,
+} from "lucide-react";
+
+const POPULAR_PAGES = [
+  {
+    title: "Introduction",
+    href: "/docs/introduction",
+    description: "Learn what laramail is and how it works",
+    icon: BookOpen,
+  },
+  {
+    title: "Quick Start",
+    href: "/docs/quick-start",
+    description: "Send your first email in under 2 minutes",
+    icon: Rocket,
+  },
+  {
+    title: "Providers",
+    href: "/docs/providers",
+    description: "SMTP, SendGrid, SES, Mailgun, Resend, Postmark & more",
+    icon: Server,
+  },
+  {
+    title: "Configuration",
+    href: "/docs/configuration",
+    description: "Set up mailers, templates, and queue drivers",
+    icon: Settings,
+  },
+];
 
 export default function NotFound() {
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center justify-center px-6">
-      <div className="text-center max-w-md">
-        {/* 404 Heading */}
-        <h1 className="text-8xl font-bold text-foreground mb-4">404</h1>
+    <div className="min-h-screen bg-background flex items-center justify-center px-4">
+      <div className="max-w-lg w-full text-center">
+        {/* Icon */}
+        <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl border border-border bg-muted/50">
+          <FileQuestion className="h-8 w-8 text-muted-foreground" />
+        </div>
 
-        {/* Message */}
-        <h2 className="text-2xl font-semibold text-foreground mb-2">
-          Page not found
-        </h2>
-        <p className="text-muted-foreground mb-8">
-          The page you&apos;re looking for doesn&apos;t exist or has been moved.
+        {/* Heading */}
+        <h1 className="text-5xl font-extrabold tracking-tight text-gradient mb-3">
+          404
+        </h1>
+        <p className="text-lg text-muted-foreground mb-8">
+          This page doesn&apos;t exist. It may have been moved or removed.
         </p>
 
-        {/* Navigation Links */}
-        <div className="flex flex-col sm:flex-row gap-3 justify-center">
-          <Link
-            href="/"
-            className="inline-flex items-center justify-center px-6 py-3 rounded-lg bg-primary text-primary-foreground font-medium hover:bg-primary/90 transition-colors"
-          >
-            Go Home
-          </Link>
-          <Link
-            href="/docs/introduction"
-            className="inline-flex items-center justify-center px-6 py-3 rounded-lg border border-border text-foreground font-medium hover:bg-accent transition-colors"
-          >
-            Browse Docs
-          </Link>
-          <Link
-            href="/docs/quick-start"
-            className="inline-flex items-center justify-center px-6 py-3 rounded-lg border border-border text-foreground font-medium hover:bg-accent transition-colors"
-          >
-            Quick Start
-          </Link>
+        {/* Popular pages */}
+        <div className="grid gap-3 text-left mb-8">
+          {POPULAR_PAGES.map((page) => (
+            <Link
+              key={page.href}
+              href={page.href}
+              className="group flex items-start gap-3 rounded-lg border border-border p-3 transition-colors hover:border-primary/30 hover:bg-muted/50"
+            >
+              <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-muted">
+                <page.icon className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
+              </div>
+              <div>
+                <span className="text-sm font-medium text-foreground group-hover:text-primary transition-colors">
+                  {page.title}
+                </span>
+                <p className="text-xs text-muted-foreground">
+                  {page.description}
+                </p>
+              </div>
+            </Link>
+          ))}
         </div>
+
+        {/* Back home */}
+        <Link
+          href="/"
+          className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+        >
+          <ArrowLeft className="h-3.5 w-3.5" />
+          Back to home
+        </Link>
       </div>
     </div>
   );
