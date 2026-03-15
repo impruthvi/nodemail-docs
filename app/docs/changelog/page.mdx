@@ -1,11 +1,11 @@
 export const metadata = {
   title: "Changelog",
-  description: "Release notes and version history for @impruthvi/nodemail.",
+  description: "Release notes and version history for laramail.",
 };
 
 # Changelog
 
-All notable changes to `@impruthvi/nodemail` are documented here.
+All notable changes to `laramail` are documented here.
 
 ---
 
@@ -32,7 +32,7 @@ All notable changes to `@impruthvi/nodemail` are documented here.
 **CLI fix**
 
 - Fixed `queue:clear` CLI command to use `--status/-s` option instead of positional argument
-- CLI now matches documented usage: `npx nodemail queue:clear --status failed`
+- CLI now matches documented usage: `npx laramail queue:clear --status failed`
 
 ---
 
@@ -42,7 +42,7 @@ All notable changes to `@impruthvi/nodemail` are documented here.
 
 - **queue**: Replace colon with underscore in queue names for BullMQ compatibility
   - BullMQ does not allow colons (`:`) in queue names
-  - Queue names now formatted as `nodemail_mail` instead of `nodemail:mail`
+  - Queue names now formatted as `laramail_mail` instead of `laramail:mail`
 
 ---
 

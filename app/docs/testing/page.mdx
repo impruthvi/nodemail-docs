@@ -10,7 +10,7 @@ export const metadata = {
 Enable fake mode to intercept all emails instead of sending them. This is the primary testing pattern:
 
 ```typescript
-import { Mail } from '@impruthvi/nodemail';
+import { Mail } from 'laramail';
 
 beforeEach(() => {
   Mail.fake();    // All emails will be stored, not sent
@@ -213,7 +213,7 @@ Returned by `Mail.sent()` and `Mail.queued()`. Provides methods to inspect messa
 ## Real-World Test Example
 
 ```typescript
-import { Mail, Mailable } from '@impruthvi/nodemail';
+import { Mail, Mailable } from 'laramail';
 
 class WelcomeEmail extends Mailable {
   constructor(public userName: string) {

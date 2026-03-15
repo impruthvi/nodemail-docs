@@ -16,17 +16,17 @@ const FOOTER_LINKS = [
     links: [
       {
         label: "GitHub",
-        href: "https://github.com/impruthvi/nodemail",
+        href: "https://github.com/impruthvi/laramail",
         external: true,
       },
       {
         label: "npm",
-        href: "https://www.npmjs.com/package/@impruthvi/nodemail",
+        href: "https://www.npmjs.com/package/laramail",
         external: true,
       },
       {
         label: "Issues",
-        href: "https://github.com/impruthvi/nodemail/issues",
+        href: "https://github.com/impruthvi/laramail/issues",
         external: true,
       },
     ],
@@ -57,7 +57,7 @@ export function Footer() {
                 <span className="text-sm font-bold text-white">N</span>
               </div>
               <span className="font-display text-lg font-semibold tracking-tight text-foreground">
-                nodemail
+                laramail
               </span>
             </Link>
             <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
@@ -66,7 +66,7 @@ export function Footer() {
             </p>
             <div className="mt-4 flex items-center gap-3">
               <a
-                href="https://github.com/impruthvi/nodemail"
+                href="https://github.com/impruthvi/laramail"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
@@ -75,7 +75,7 @@ export function Footer() {
                 <Github className="h-4 w-4" />
               </a>
               <a
-                href="https://www.npmjs.com/package/@impruthvi/nodemail"
+                href="https://www.npmjs.com/package/laramail"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"

@@ -1,7 +1,7 @@
 import { MetadataRoute } from "next";
 import { NAVIGATION } from "@/lib/navigation";
 
-const BASE_URL = "https://nodemail.impruthvi.me";
+const BASE_URL = "https://laramail.impruthvi.me";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   // Get all doc pages from navigation

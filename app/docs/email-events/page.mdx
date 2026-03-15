@@ -28,7 +28,7 @@ Nodemail fires events at key points during email delivery:
 ## Quick Start
 
 ```typescript
-import { Mail } from '@impruthvi/nodemail';
+import { Mail } from 'laramail';
 
 // Log all outgoing emails
 Mail.onSending((event) => {
@@ -187,7 +187,7 @@ Mail.onSent(async (event) => {
 Events are also available on `MailManager` instances:
 
 ```typescript
-import { MailManager } from '@impruthvi/nodemail';
+import { MailManager } from 'laramail';
 
 const manager = new MailManager(config);
 

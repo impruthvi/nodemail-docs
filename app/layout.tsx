@@ -18,23 +18,23 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://nodemail.impruthvi.me"),
+  metadataBase: new URL("https://laramail.impruthvi.me"),
   title: {
-    default: "@impruthvi/nodemail — Email for Node.js, Done Right",
-    template: "%s | @impruthvi/nodemail",
+    default: "laramail — Email for Node.js, Done Right",
+    template: "%s | laramail",
   },
   description: "Laravel-inspired, lightweight, modular email library for Node.js with full TypeScript support. 6 providers, template engines, queue support, markdown mail, and more.",
-  keywords: ["nodemail", "email", "nodejs", "typescript", "smtp", "sendgrid", "ses", "mailgun", "resend", "postmark", "laravel", "mailable"],
+  keywords: ["laramail", "email", "nodejs", "typescript", "smtp", "sendgrid", "ses", "mailgun", "resend", "postmark", "laravel", "mailable"],
   authors: [{ name: "impruthvi" }],
   openGraph: {
-    title: "@impruthvi/nodemail — Email for Node.js, Done Right",
+    title: "laramail — Email for Node.js, Done Right",
     description: "Laravel-inspired, lightweight, modular email library for Node.js with full TypeScript support.",
     type: "website",
-    url: "https://nodemail.impruthvi.me",
+    url: "https://laramail.impruthvi.me",
   },
   twitter: {
     card: "summary_large_image",
-    title: "@impruthvi/nodemail",
+    title: "laramail",
     description: "Laravel-inspired email library for Node.js",
   },
 };

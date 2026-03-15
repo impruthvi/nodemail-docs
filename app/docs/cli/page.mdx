@@ -5,13 +5,13 @@ export const metadata = {
 
 # CLI Commands
 
-The `@impruthvi/nodemail` package includes a powerful CLI tool for queue management, email preview, code generation, and configuration validation.
+The `laramail` package includes a powerful CLI tool for queue management, email preview, code generation, and configuration validation.
 
 ## Installation
 
 The CLI is automatically available after installing the package:
 
-<PackageManagerTabs command="@impruthvi/nodemail" />
+<PackageManagerTabs command="laramail" />
 
 For styled output, install the optional dependency:
 
@@ -21,16 +21,16 @@ For styled output, install the optional dependency:
 
 The CLI automatically detects configuration files in your project root:
 
-- `nodemail.config.ts` (TypeScript, recommended)
-- `nodemail.config.js` (JavaScript)
-- `nodemail.config.mjs` (ES Module)
-- `nodemail.config.cjs` (CommonJS)
+- `laramail.config.ts` (TypeScript, recommended)
+- `laramail.config.js` (JavaScript)
+- `laramail.config.mjs` (ES Module)
+- `laramail.config.cjs` (CommonJS)
 
 ### Example Configuration
 
 ```typescript
-// nodemail.config.ts
-import { defineConfig } from '@impruthvi/nodemail';
+// laramail.config.ts
+import { defineConfig } from 'laramail';
 
 export default defineConfig({
   default: 'smtp',
@@ -67,7 +67,7 @@ The `defineConfig` helper provides TypeScript autocomplete for your configuratio
 Start processing queued emails.
 
 ```bash
-npx nodemail queue:work [options]
+npx laramail queue:work [options]
 ```
 
 **Options:**
@@ -82,13 +82,13 @@ npx nodemail queue:work [options]
 
 ```bash
 # Process the default mail queue
-npx nodemail queue:work
+npx laramail queue:work
 
 # Process with 5 concurrent workers
-npx nodemail queue:work --concurrency 5
+npx laramail queue:work --concurrency 5
 
 # Process a specific queue
-npx nodemail queue:work --queue notifications
+npx laramail queue:work --queue notifications
 ```
 
 #### `queue:status`
@@ -96,7 +96,7 @@ npx nodemail queue:work --queue notifications
 Show queue job counts and status.
 
 ```bash
-npx nodemail queue:status [options]
+npx laramail queue:status [options]
 ```
 
 **Options:**
@@ -109,7 +109,7 @@ npx nodemail queue:status [options]
 **Example:**
 
 ```bash
-npx nodemail queue:status
+npx laramail queue:status
 ```
 
 **Output:**
@@ -133,7 +133,7 @@ Total Jobs: 1,259
 Clear jobs from the queue by status.
 
 ```bash
-npx nodemail queue:clear [options]
+npx laramail queue:clear [options]
 ```
 
 **Options:**
@@ -151,13 +151,13 @@ npx nodemail queue:clear [options]
 
 ```bash
 # Clear failed jobs (with confirmation)
-npx nodemail queue:clear --status failed
+npx laramail queue:clear --status failed
 
 # Clear completed jobs without confirmation
-npx nodemail queue:clear --status completed --force
+npx laramail queue:clear --status completed --force
 
 # Clear delayed jobs from a specific queue
-npx nodemail queue:clear --queue notifications --status delayed
+npx laramail queue:clear --queue notifications --status delayed
 ```
 
 #### `queue:retry`
@@ -165,7 +165,7 @@ npx nodemail queue:clear --queue notifications --status delayed
 Retry failed jobs in the queue.
 
 ```bash
-npx nodemail queue:retry [options]
+npx laramail queue:retry [options]
 ```
 
 **Options:**
@@ -180,10 +180,10 @@ npx nodemail queue:retry [options]
 
 ```bash
 # Retry all failed jobs
-npx nodemail queue:retry
+npx laramail queue:retry
 
 # Retry up to 10 failed jobs
-npx nodemail queue:retry --limit 10
+npx laramail queue:retry --limit 10
 ```
 
 ### Email Commands
@@ -193,7 +193,7 @@ npx nodemail queue:retry --limit 10
 Preview an email in your browser without sending.
 
 ```bash
-npx nodemail preview [options]
+npx laramail preview [options]
 ```
 
 **Options:**
@@ -208,10 +208,10 @@ npx nodemail preview [options]
 
 ```bash
 # Preview a Mailable in browser
-npx nodemail preview --mailable ./src/mail/WelcomeEmail.ts
+npx laramail preview --mailable ./src/mail/WelcomeEmail.ts
 
 # Save preview to file
-npx nodemail preview --mailable ./src/mail/WelcomeEmail.ts --output preview.html
+npx laramail preview --mailable ./src/mail/WelcomeEmail.ts --output preview.html
 ```
 
 **Note:** Requires the `open` package for browser preview:
@@ -223,7 +223,7 @@ npx nodemail preview --mailable ./src/mail/WelcomeEmail.ts --output preview.html
 Send a test email to verify your configuration.
 
 ```bash
-npx nodemail send:test [options]
+npx laramail send:test [options]
 ```
 
 **Options:**
@@ -238,10 +238,10 @@ npx nodemail send:test [options]
 
 ```bash
 # Send test email to yourself
-npx nodemail send:test --to your@email.com
+npx laramail send:test --to your@email.com
 
 # Test a specific mailer
-npx nodemail send:test --to your@email.com --mailer sendgrid
+npx laramail send:test --to your@email.com --mailer sendgrid
 ```
 
 ### Code Generation
@@ -251,7 +251,7 @@ npx nodemail send:test --to your@email.com --mailer sendgrid
 Generate a new Mailable class.
 
 ```bash
-npx nodemail make:mailable <name> [options]
+npx laramail make:mailable <name> [options]
 ```
 
 **Arguments:**
@@ -272,22 +272,22 @@ npx nodemail make:mailable <name> [options]
 
 ```bash
 # Generate a basic Mailable
-npx nodemail make:mailable WelcomeEmail
+npx laramail make:mailable WelcomeEmail
 
 # Generate in a custom directory
-npx nodemail make:mailable OrderConfirmation --dir ./src/emails
+npx laramail make:mailable OrderConfirmation --dir ./src/emails
 
 # Generate a MarkdownMailable
-npx nodemail make:mailable NewsletterEmail --markdown
+npx laramail make:mailable NewsletterEmail --markdown
 
 # Generate with template support
-npx nodemail make:mailable InvoiceEmail --template invoice
+npx laramail make:mailable InvoiceEmail --template invoice
 ```
 
 **Generated file (`src/mail/WelcomeEmail.ts`):**
 
 ```typescript
-import { Mailable } from '@impruthvi/nodemail';
+import { Mailable } from 'laramail';
 
 export class WelcomeEmail extends Mailable {
   constructor() {
@@ -309,7 +309,7 @@ export class WelcomeEmail extends Mailable {
 Validate your mail configuration.
 
 ```bash
-npx nodemail config:check [options]
+npx laramail config:check [options]
 ```
 
 **Options:**
@@ -323,10 +323,10 @@ npx nodemail config:check [options]
 
 ```bash
 # Validate configuration
-npx nodemail config:check
+npx laramail config:check
 
 # Validate and test provider connections
-npx nodemail config:check --test
+npx laramail config:check --test
 ```
 
 **Output:**
@@ -335,7 +335,7 @@ npx nodemail config:check --test
 Configuration Check
 ===================
 
-Config file found: /path/to/nodemail.config.ts
+Config file found: /path/to/laramail.config.ts
 Configuration loaded successfully
 
 Validating configuration...
@@ -368,7 +368,7 @@ All commands support the following global options:
 You can also use CLI functionality programmatically:
 
 ```typescript
-import { QueueManager } from '@impruthvi/nodemail';
+import { QueueManager } from 'laramail';
 
 // Get queue status
 const manager = new QueueManager(config.queue);
@@ -388,10 +388,10 @@ const retriedCount = await manager.retryFailed('mail', 10);
 ### Config file not found
 
 Ensure your config file is in the project root and uses one of the supported names:
-- `nodemail.config.ts`
-- `nodemail.config.js`
-- `nodemail.config.mjs`
-- `nodemail.config.cjs`
+- `laramail.config.ts`
+- `laramail.config.js`
+- `laramail.config.mjs`
+- `laramail.config.cjs`
 
 ### Queue commands fail
 

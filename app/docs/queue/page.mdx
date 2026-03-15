@@ -23,7 +23,7 @@ Mail.configure({
       port: 6379,
     },
     defaultQueue: 'mail',
-    prefix: 'nodemail',
+    prefix: 'laramail',
     retries: 3,
     backoff: { type: 'exponential', delay: 1000 },
   },
@@ -100,7 +100,7 @@ await Mail.processQueue('priority-mail');
 For advanced usage, access the `QueueManager` directly:
 
 ```typescript
-import { QueueManager } from '@impruthvi/nodemail';
+import { QueueManager } from 'laramail';
 
 const queueManager = new QueueManager({
   driver: 'bullmq',

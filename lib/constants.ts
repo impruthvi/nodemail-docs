@@ -156,7 +156,7 @@ export const PROVIDERS: Provider[] = [
 ];
 
 // ─── Stats ───────────────────────────────────────────────────────────────────
-// Dynamic stats fetched at build time from the main nodemail repo
+// Dynamic stats fetched at build time from the main laramail repo
 import statsData from "../public/stats.json";
 
 export const STATS = [
@@ -167,7 +167,7 @@ export const STATS = [
 
 // ─── Code Examples ───────────────────────────────────────────────────────────
 export const CODE_EXAMPLES = {
-  quickStart: `import { Mail } from '@impruthvi/nodemail';
+  quickStart: `import { Mail } from 'laramail';
 
 Mail.configure({
   default: 'smtp',

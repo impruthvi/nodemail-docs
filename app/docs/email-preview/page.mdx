@@ -24,7 +24,7 @@ Preview emails (rendered HTML/text with all preprocessing applied) without actua
 ## Quick Start
 
 ```typescript
-import { Mail } from '@impruthvi/nodemail';
+import { Mail } from 'laramail';
 
 // Preview via fluent builder
 const preview = await Mail.to('user@example.com')
@@ -63,7 +63,7 @@ const preview = await Mail.to('user@example.com')
 Preview a Mailable class without sending.
 
 ```typescript
-import { Mailable } from '@impruthvi/nodemail';
+import { Mailable } from 'laramail';
 
 class WelcomeMail extends Mailable {
   build() {
@@ -126,7 +126,7 @@ interface PreviewResult {
 Preview works seamlessly with `Mail.fake()`. Importantly, previewing does **not** store any messages or fire any events.
 
 ```typescript
-import { Mail } from '@impruthvi/nodemail';
+import { Mail } from 'laramail';
 
 Mail.fake();
 

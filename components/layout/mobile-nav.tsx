@@ -31,7 +31,7 @@ export function MobileNav() {
           <div className="absolute inset-y-0 left-0 w-80 max-w-[85vw] bg-card border-r border-border p-6 overflow-y-auto scrollbar-thin">
             <div className="flex items-center justify-between mb-8">
               <span className="font-display font-bold text-sm text-gradient-static">
-                @impruthvi/nodemail
+                laramail
               </span>
               <button
                 onClick={() => setOpen(false)}

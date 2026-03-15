@@ -1,8 +1,8 @@
-# Nodemail Documentation
+# Laramail Documentation
 
-Documentation website for [@impruthvi/nodemail](https://www.npmjs.com/package/@impruthvi/nodemail) — a Laravel-inspired Node.js email library.
+Documentation website for [laramail](https://www.npmjs.com/package/laramail) — a Laravel-inspired Node.js email library.
 
-**Live site:** [nodemail.impruthvi.me](https://nodemail.impruthvi.me)
+**Live site:** [laramail.impruthvi.me](https://laramail.impruthvi.me)
 
 ## Tech Stack
 

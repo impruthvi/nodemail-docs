@@ -1,6 +1,6 @@
 import { ImageResponse } from "next/og";
 
-export const alt = "@impruthvi/nodemail Documentation";
+export const alt = "laramail Documentation";
 export const size = {
   width: 1200,
   height: 630,
@@ -15,7 +15,7 @@ export default async function Image() {
       >
         <div tw="flex flex-col items-center justify-center text-center">
           <span tw="text-3xl text-zinc-400 mb-6">
-            @impruthvi/nodemail
+            laramail
           </span>
           <span tw="text-6xl font-bold text-white mb-4">
             Documentation

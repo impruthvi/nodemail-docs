@@ -5,11 +5,11 @@ export const metadata = {
 
 # SMTP Provider
 
-The SMTP provider uses Nodemailer under the hood and is included with the base `@impruthvi/nodemail` package. No additional installation is required.
+The SMTP provider uses Nodemailer under the hood and is included with the base `laramail` package. No additional installation is required.
 
 ## Installation
 
-Included with `@impruthvi/nodemail` -- no extra dependencies needed.
+Included with `laramail` -- no extra dependencies needed.
 
 ## Configuration
 
@@ -35,7 +35,7 @@ The `SmtpProvider` exposes an additional `verify()` method that lets you check w
 - `verify(): Promise<boolean>` -- Returns `true` if the connection is valid.
 
 ```typescript
-import { SmtpProvider } from '@impruthvi/nodemail';
+import { SmtpProvider } from 'laramail';
 
 const smtp = new SmtpProvider({
   driver: 'smtp',

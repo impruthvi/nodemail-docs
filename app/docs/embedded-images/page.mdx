@@ -25,7 +25,7 @@ When you send an HTML email with `<img src="https://...">`, the image may be blo
 ## Quick Start
 
 ```typescript
-import { Mail } from '@impruthvi/nodemail';
+import { Mail } from 'laramail';
 
 await Mail.to('user@example.com')
   .subject('Welcome!')
@@ -125,7 +125,7 @@ await Mail.to('user@example.com')
 Use `embedImage()` and `embedImageData()` as protected methods inside your `Mailable` subclass:
 
 ```typescript
-import { Mailable } from '@impruthvi/nodemail';
+import { Mailable } from 'laramail';
 
 class WelcomeEmail extends Mailable {
   constructor(private user: { name: string }) {
@@ -172,7 +172,7 @@ await Mail.to('user@example.com')
 Works with `MailManager.to()` as well:
 
 ```typescript
-import { MailManager } from '@impruthvi/nodemail';
+import { MailManager } from 'laramail';
 
 const manager = new MailManager(config);
 
@@ -200,7 +200,7 @@ When using `Mail.fake()`, the `AssertableMessage` class provides helpers for ver
 ### Example Test
 
 ```typescript
-import { Mail } from '@impruthvi/nodemail';
+import { Mail } from 'laramail';
 import { WelcomeEmail } from './mailables/WelcomeEmail';
 
 describe('WelcomeEmail', () => {

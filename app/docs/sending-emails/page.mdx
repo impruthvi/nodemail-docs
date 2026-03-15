@@ -42,7 +42,7 @@ const result = await Mail.to('user@example.com')
 Create reusable email definitions by extending the abstract `Mailable` class:
 
 ```typescript
-import { Mailable } from '@impruthvi/nodemail';
+import { Mailable } from 'laramail';
 
 class OrderConfirmation extends Mailable {
   constructor(
@@ -143,7 +143,7 @@ await sendgridManager.to('user@example.com')
 The `Message` class is a standalone message builder that can be used independently of the `Mail` facade:
 
 ```typescript
-import { Message } from '@impruthvi/nodemail';
+import { Message } from 'laramail';
 
 const message = new Message();
 message

@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Documentation website for `@impruthvi/nodemail` — a Laravel-inspired Node.js email library. Built with Next.js 16, MDX, and Tailwind CSS v4. The site serves as the public-facing docs at nodemail.impruthvi.me.
+Documentation website for `laramail` — a Laravel-inspired Node.js email library. Built with Next.js 16, MDX, and Tailwind CSS v4. The site serves as the public-facing docs at laramail.impruthvi.me.
 
 ## Commands
 
@@ -51,4 +51,4 @@ Documentation website for `@impruthvi/nodemail` — a Laravel-inspired Node.js e
 
 ### Content Source
 
-`DOCUMENT.md` at the project root contains the complete reference documentation for the `@impruthvi/nodemail` package. This is the authoritative source for all doc page content.
+`DOCUMENT.md` at the project root contains the complete reference documentation for the `laramail` package. This is the authoritative source for all doc page content.

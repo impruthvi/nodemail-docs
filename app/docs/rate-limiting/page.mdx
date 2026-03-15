@@ -24,7 +24,7 @@ Production applications sending high volumes of email need throttling to stay wi
 ## Quick Start
 
 ```typescript
-import { Mail } from '@impruthvi/nodemail';
+import { Mail } from 'laramail';
 
 Mail.configure({
   default: 'smtp',
@@ -143,7 +143,7 @@ Mail.configure({
 The `RateLimiter` class is exported for advanced use cases:
 
 ```typescript
-import { RateLimiter } from '@impruthvi/nodemail';
+import { RateLimiter } from 'laramail';
 
 const limiter = new RateLimiter();
 
@@ -211,7 +211,7 @@ In test mode (`MailFake`), rate limiting does not apply. `MailFake` bypasses `Ma
 To test rate limiting behavior itself, use the real `MailManager` with mocked providers:
 
 ```typescript
-import { MailManager } from '@impruthvi/nodemail';
+import { MailManager } from 'laramail';
 
 const manager = new MailManager({
   default: 'smtp',

@@ -31,7 +31,7 @@ Email clients recognize priority headers to flag messages as urgent or low-impor
 ## Quick Start
 
 ```typescript
-import { Mail } from '@impruthvi/nodemail';
+import { Mail } from 'laramail';
 
 await Mail.to('user@example.com')
   .subject('Urgent: Action Required')
@@ -71,7 +71,7 @@ await Mail.to('user@example.com')
 ### Pattern 2: Mailable Class
 
 ```typescript
-import { Mailable } from '@impruthvi/nodemail';
+import { Mailable } from 'laramail';
 
 class AlertEmail extends Mailable {
   constructor(private message: string) {
@@ -102,7 +102,7 @@ await Mail.to('user@example.com')
 ### Pattern 4: MailManager Direct Usage
 
 ```typescript
-import { MailManager } from '@impruthvi/nodemail';
+import { MailManager } from 'laramail';
 
 const manager = new MailManager(config);
 
@@ -116,7 +116,7 @@ await manager.to('user@example.com')
 ### Pattern 5: Message Class (Low-Level)
 
 ```typescript
-import { Message } from '@impruthvi/nodemail';
+import { Message } from 'laramail';
 
 const message = new Message();
 message
@@ -165,7 +165,7 @@ When using `Mail.fake()`, the `AssertableMessage` class provides helpers for ver
 ### Example Test
 
 ```typescript
-import { Mail } from '@impruthvi/nodemail';
+import { Mail } from 'laramail';
 import { AlertEmail } from './mailables/AlertEmail';
 
 describe('AlertEmail', () => {

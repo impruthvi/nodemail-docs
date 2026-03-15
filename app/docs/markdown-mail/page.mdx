@@ -14,7 +14,7 @@ Write emails in Markdown with built-in components. The markdown is converted to 
 Extends `Mailable` with markdown-specific methods:
 
 ```typescript
-import { MarkdownMailable } from '@impruthvi/nodemail';
+import { MarkdownMailable } from 'laramail';
 
 class WelcomeEmail extends MarkdownMailable {
   constructor(private user: { name: string }) {
@@ -91,7 +91,7 @@ Styled table wrapper:
 Use the renderer directly for more control:
 
 ```typescript
-import { MarkdownRenderer } from '@impruthvi/nodemail';
+import { MarkdownRenderer } from 'laramail';
 
 const renderer = new MarkdownRenderer({
   theme: { css: 'h1 { color: red; }' },
@@ -151,7 +151,7 @@ The default theme provides a professional, responsive email layout:
 Access the default theme:
 
 ```typescript
-import { getDefaultTheme } from '@impruthvi/nodemail';
+import { getDefaultTheme } from 'laramail';
 
 const theme = getDefaultTheme();
 console.log(theme.css); // Full default CSS

@@ -1,6 +1,6 @@
 export const metadata = {
   title: "Quick Start",
-  description: "Send your first email in minutes with @impruthvi/nodemail. Learn the fluent API and Mailable class pattern with step-by-step examples.",
+  description: "Send your first email in minutes with laramail. Learn the fluent API and Mailable class pattern with step-by-step examples.",
 };
 
 # Quick Start
@@ -8,7 +8,7 @@ export const metadata = {
 ## Minimal SMTP Configuration
 
 ```typescript
-import { Mail } from '@impruthvi/nodemail';
+import { Mail } from 'laramail';
 
 Mail.configure({
   default: 'smtp',
@@ -57,7 +57,7 @@ await Mail.to('user@example.com')
 ## Mailable Class Example
 
 ```typescript
-import { Mailable, Mail } from '@impruthvi/nodemail';
+import { Mailable, Mail } from 'laramail';
 
 class WelcomeEmail extends Mailable {
   constructor(private user: { name: string }) {

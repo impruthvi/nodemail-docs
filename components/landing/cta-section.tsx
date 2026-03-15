@@ -6,7 +6,7 @@ import { ArrowRight, Github } from "lucide-react";
 import { CopyButton } from "@/components/docs/copy-button";
 
 export function CTASection() {
-  const installCmd = "npm install @impruthvi/nodemail";
+  const installCmd = "npm install laramail";
 
   return (
     <section className="relative py-32 px-6 overflow-hidden">
@@ -45,7 +45,7 @@ export function CTASection() {
               <ArrowRight className="w-4 h-4" />
             </Link>
             <a
-              href="https://github.com/impruthvi/nodemail"
+              href="https://github.com/impruthvi/laramail"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 px-8 py-3 border border-border rounded-xl font-semibold text-sm text-muted-foreground hover:text-foreground hover:border-foreground/20 transition-colors"

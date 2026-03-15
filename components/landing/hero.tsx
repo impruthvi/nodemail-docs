@@ -51,7 +51,7 @@ const fadeUp = {
 export function Hero() {
   const ref = useRef<HTMLElement>(null);
   const isInView = useInView(ref, { once: true, amount: 0.2 });
-  const installCmd = "npm install @impruthvi/nodemail";
+  const installCmd = "npm install laramail";
 
   return (
     <section
@@ -132,7 +132,7 @@ export function Hero() {
                 <ArrowRight className="w-4 h-4" />
               </Link>
               <a
-                href="https://github.com/impruthvi/nodemail"
+                href="https://github.com/impruthvi/laramail"
                 target="_blank"
                 rel="noopener noreferrer"
                 className={cn(

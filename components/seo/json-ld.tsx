@@ -1,4 +1,4 @@
-const BASE_URL = "https://nodemail.impruthvi.me";
+const BASE_URL = "https://laramail.impruthvi.me";
 
 interface JsonLdProps {
   data: Record<string, unknown>;
@@ -17,7 +17,7 @@ export function WebSiteSchema() {
   const data = {
     "@context": "https://schema.org",
     "@type": "WebSite",
-    name: "@impruthvi/nodemail",
+    name: "laramail",
     description:
       "Laravel-inspired, lightweight, modular email library for Node.js with full TypeScript support.",
     url: BASE_URL,
@@ -38,10 +38,10 @@ export function SoftwareSourceCodeSchema() {
   const data = {
     "@context": "https://schema.org",
     "@type": "SoftwareSourceCode",
-    name: "@impruthvi/nodemail",
+    name: "laramail",
     description:
       "Laravel-inspired, lightweight, modular email library for Node.js with full TypeScript support. 6 providers, template engines, queue support, markdown mail, and more.",
-    codeRepository: "https://github.com/impruthvi/nodemail",
+    codeRepository: "https://github.com/impruthvi/laramail",
     programmingLanguage: ["TypeScript", "JavaScript"],
     runtimePlatform: "Node.js",
     author: {
@@ -102,7 +102,7 @@ export function TechArticleSchema({
     },
     publisher: {
       "@type": "Organization",
-      name: "@impruthvi/nodemail",
+      name: "laramail",
       url: BASE_URL,
     },
     mainEntityOfPage: {

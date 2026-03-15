@@ -6,6 +6,6 @@ export default function robots(): MetadataRoute.Robots {
       userAgent: "*",
       allow: "/",
     },
-    sitemap: "https://nodemail.impruthvi.me/sitemap.xml",
+    sitemap: "https://laramail.impruthvi.me/sitemap.xml",
   };
 }

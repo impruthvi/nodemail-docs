@@ -20,13 +20,13 @@ const NAV_LINKS = [
   { label: "Providers", href: "/docs/providers", icon: Layers },
   {
     label: "GitHub",
-    href: "https://github.com/impruthvi/nodemail",
+    href: "https://github.com/impruthvi/laramail",
     icon: Github,
     external: true,
   },
   {
     label: "npm",
-    href: "https://www.npmjs.com/package/@impruthvi/nodemail",
+    href: "https://www.npmjs.com/package/laramail",
     icon: Package,
     external: true,
   },
@@ -59,8 +59,7 @@ export function Header() {
                 <span className="text-sm font-bold text-white">N</span>
               </div>
               <span className="hidden font-display text-lg font-semibold tracking-tight text-foreground sm:inline-block">
-                @impruthvi/
-                <span className="text-gradient-static">nodemail</span>
+                <span className="text-gradient-static">laramail</span>
               </span>
             </Link>
           </div>
