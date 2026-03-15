@@ -19,14 +19,18 @@ interface SearchEntry {
 
 /** Lazy-load and cache the search index. Returns null while loading or on failure. */
 function useSearchIndex(shouldLoad: boolean) {
-  const [engine, setEngine] = useState<MiniSearch<SearchEntry> | null>(null);
-  const [loading, setLoading] = useState(false);
-  const loaded = useRef(false);
+  const [state, setState] = useState<{
+    engine: MiniSearch<SearchEntry> | null;
+    loading: boolean;
+  }>({ engine: null, loading: false });
+  const fetched = useRef(false);
 
   useEffect(() => {
-    if (!shouldLoad || loaded.current) return;
-    loaded.current = true;
-    setLoading(true);
+    if (!shouldLoad || fetched.current) return;
+    fetched.current = true;
+
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Hydration: sync loading state on mount before async fetch
+    setState({ engine: null, loading: true });
 
     fetch("/search-index.json")
       .then((res) => res.json())
@@ -41,15 +45,15 @@ function useSearchIndex(shouldLoad: boolean) {
           },
         });
         ms.addAll(entries);
-        setEngine(ms);
+        setState({ engine: ms, loading: false });
       })
       .catch(() => {
         // Fallback: full-text search unavailable, cmdk title filter still works
-      })
-      .finally(() => setLoading(false));
+        setState({ engine: null, loading: false });
+      });
   }, [shouldLoad]);
 
-  return { engine, loading };
+  return state;
 }
 
 export function SearchDialog() {
