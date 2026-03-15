@@ -7,7 +7,7 @@
  * Usage: bun run scripts/build-search-index.ts
  */
 
-import { readdir, readFile, writeFile, stat } from "node:fs/promises";
+import { readdir, readFile, writeFile } from "node:fs/promises";
 import { join, relative } from "node:path";
 
 interface SearchEntry {
