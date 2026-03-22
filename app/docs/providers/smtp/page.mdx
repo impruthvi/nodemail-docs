@@ -28,6 +28,36 @@ Mail.configure({
 });
 ```
 
+## Connection Pooling
+
+Enable connection pooling for high-volume sending. The pool reuses SMTP connections instead of creating a new one for each email.
+
+```typescript
+Mail.configure({
+  default: 'smtp',
+  from: { address: 'noreply@example.com', name: 'My App' },
+  mailers: {
+    smtp: {
+      driver: 'smtp',
+      host: 'smtp.example.com',
+      port: 587,
+      auth: { user: 'username', pass: 'password' },
+      pool: true,
+      maxConnections: 5,   // default: 5
+      maxMessages: 100,     // default: 100
+    },
+  },
+});
+```
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `pool` | `boolean` | `false` | Enable connection pooling |
+| `maxConnections` | `number` | `5` | Maximum simultaneous SMTP connections |
+| `maxMessages` | `number` | `100` | Maximum messages per connection before reconnecting |
+
+---
+
 ## SmtpProvider Extras
 
 The `SmtpProvider` exposes an additional `verify()` method that lets you check whether the SMTP connection is valid before sending emails.

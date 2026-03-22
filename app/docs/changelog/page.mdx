@@ -9,6 +9,19 @@ All notable changes to `laramail` are documented here.
 
 ---
 
+## v1.4.0
+
+**Quality & Safety** — typed errors, comprehensive test coverage, SMTP pooling.
+
+- **[Error Handling](/docs/error-handling)** — `ConfigurationError`, `ValidationError`, `ProviderError`, and `AllProvidersFailedError` replace generic `Error` throws across all source files. Use `instanceof` for granular error handling.
+- **SMTP Connection Pooling** — `pool`, `maxConnections`, `maxMessages` options in [SMTP provider config](/docs/providers/smtp).
+- **CLI Command Tests** — 65 new tests covering all 8 CLI commands.
+- **Provider Tests** — 24 new tests for SendGrid and SES providers.
+- **Error Class Tests** — 37 tests for typed error hierarchy and integration.
+- 129 new tests (774 total across 51 suites)
+
+---
+
 ## v1.3.0
 
 **Developer Experience** — 3 new features for better development and staging workflows.

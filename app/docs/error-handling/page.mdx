@@ -1,0 +1,239 @@
+export const metadata = {
+  title: "Error Handling",
+  description: "Typed error classes for granular error handling. Use instanceof to catch ConfigurationError, ValidationError, ProviderError, and AllProvidersFailedError.",
+};
+
+# Error Handling
+
+laramail throws typed error classes instead of generic `Error` objects. This lets you use `instanceof` for granular error handling in your application.
+
+---
+
+## Error Hierarchy
+
+```
+Error
+  └── NodeMailError (base class for all laramail errors)
+        ├── ConfigurationError   — missing/invalid config, unsupported driver, missing dependency
+        ├── ValidationError      — bad user input (missing subject, recipients, API key)
+        ├── ProviderError        — runtime send failure from a specific provider
+        └── AllProvidersFailedError — every provider in a failover chain failed
+```
+
+---
+
+## Quick Start
+
+```typescript
+import {
+  ConfigurationError,
+  ValidationError,
+  ProviderError,
+  AllProvidersFailedError,
+} from 'laramail';
+
+try {
+  await Mail.to('user@example.com')
+    .subject('Hello')
+    .html('<p>Hi</p>')
+    .send();
+} catch (error) {
+  if (error instanceof ValidationError) {
+    console.log('Invalid input:', error.message, error.field);
+  } else if (error instanceof ConfigurationError) {
+    console.log('Config problem:', error.message);
+  } else if (error instanceof ProviderError) {
+    console.log(`Provider ${error.provider} failed:`, error.message);
+  } else if (error instanceof AllProvidersFailedError) {
+    console.log('All providers failed:', error.attempts);
+  }
+}
+```
+
+---
+
+## Error Classes
+
+### `NodeMailError`
+
+Base class for all laramail errors. Extends the native `Error` class.
+
+```typescript
+import { NodeMailError } from 'laramail';
+
+try {
+  // any laramail operation
+} catch (error) {
+  if (error instanceof NodeMailError) {
+    // This catches ALL laramail errors
+  }
+}
+```
+
+### `ConfigurationError`
+
+Thrown when the library is misconfigured. Common causes:
+
+| Cause | Example Message |
+|-------|----------------|
+| Missing `Mail.configure()` | `"Mail not configured. Call Mail.configure() before using Mail facade."` |
+| Unsupported driver | `"Unsupported mail driver: foobar"` |
+| Missing optional dependency | `"SendGrid provider requires @sendgrid/mail package."` |
+| Mailer not found | `"Mailer 'backup' is not configured."` |
+| Queue not configured | `"Queue is not configured. Add a 'queue' section to your mail config."` |
+
+```typescript
+import { ConfigurationError } from 'laramail';
+
+try {
+  Mail.configure({ /* ... */ });
+} catch (error) {
+  if (error instanceof ConfigurationError) {
+    console.error('Fix your config:', error.message);
+  }
+}
+```
+
+### `ValidationError`
+
+Thrown when user input is invalid. Has an optional `field` property indicating which field caused the error.
+
+| Field | Example Message |
+|-------|----------------|
+| `"subject"` | `"Email subject is required"` |
+| `"to"` | `"No recipients defined. Use .to() before sending."` |
+| `"apiKey"` | `"Resend API key is required"` |
+| `"serverToken"` | `"Postmark server token is required"` |
+| `"domain"` | `"Mailgun domain is required"` |
+
+```typescript
+import { ValidationError } from 'laramail';
+
+try {
+  await Mail.to('user@example.com').send(mailable);
+} catch (error) {
+  if (error instanceof ValidationError) {
+    console.error(`Invalid field "${error.field}":`, error.message);
+  }
+}
+```
+
+### `ProviderError`
+
+Thrown when a provider fails at runtime. Has a `provider` property identifying which provider failed.
+
+```typescript
+import { ProviderError } from 'laramail';
+
+try {
+  await Mail.to('user@example.com')
+    .subject('Hello')
+    .html('<p>Hi</p>')
+    .send();
+} catch (error) {
+  if (error instanceof ProviderError) {
+    console.error(`Provider "${error.provider}" failed:`, error.message);
+  }
+}
+```
+
+### `AllProvidersFailedError`
+
+Thrown when every provider in a failover chain has failed. Has an `attempts` array with details for each provider.
+
+```typescript
+import { AllProvidersFailedError } from 'laramail';
+
+try {
+  await Mail.to('user@example.com')
+    .subject('Hello')
+    .html('<p>Hi</p>')
+    .send();
+} catch (error) {
+  if (error instanceof AllProvidersFailedError) {
+    for (const attempt of error.attempts) {
+      console.error(`${attempt.provider}: ${attempt.error}`);
+    }
+  }
+}
+```
+
+---
+
+## Classification
+
+| Error Class | When Thrown |
+|-------------|------------|
+| `ConfigurationError` | Missing/invalid config, unsupported driver, missing optional dependency |
+| `ValidationError` | Bad user input — missing subject, recipients, API key. Check `.field` for details |
+| `ProviderError` | Runtime send failure from a specific provider |
+| `AllProvidersFailedError` | Every provider in a failover chain failed |
+
+---
+
+## Catching All Errors
+
+Use `NodeMailError` to catch any laramail error:
+
+```typescript
+import { NodeMailError } from 'laramail';
+
+try {
+  await Mail.to('user@example.com').send(mailable);
+} catch (error) {
+  if (error instanceof NodeMailError) {
+    // Handle any laramail error
+    console.error('Mail error:', error.name, error.message);
+  } else {
+    // Some other error (network, etc.)
+    throw error;
+  }
+}
+```
+
+---
+
+## API Reference
+
+### `NodeMailError`
+
+```typescript
+class NodeMailError extends Error {
+  name: string; // 'NodeMailError'
+}
+```
+
+### `ConfigurationError`
+
+```typescript
+class ConfigurationError extends NodeMailError {
+  name: string; // 'ConfigurationError'
+}
+```
+
+### `ValidationError`
+
+```typescript
+class ValidationError extends NodeMailError {
+  name: string;  // 'ValidationError'
+  field?: string; // The field that caused the error
+}
+```
+
+### `ProviderError`
+
+```typescript
+class ProviderError extends NodeMailError {
+  name: string;    // 'ProviderError'
+  provider: string; // The provider that failed
+}
+```
+
+### `AllProvidersFailedError`
+
+```typescript
+class AllProvidersFailedError extends NodeMailError {
+  name: string; // 'AllProvidersFailedError'
+  attempts: Array<{ provider: string; error: string }>;
+}
+```

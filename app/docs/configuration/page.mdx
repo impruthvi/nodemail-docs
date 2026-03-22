@@ -182,15 +182,15 @@ interface PostmarkConfig extends MailerConfig {
 }
 ```
 
-### Mailtrap (`MailtrapConfig`)
+### Log (`LogConfig`)
 
 ```typescript
-interface MailtrapConfig extends MailerConfig {
-  driver: 'mailtrap';
-  token: string;               // Mailtrap API token
-  inboxId: string;             // Mailtrap inbox ID
+interface LogConfig extends MailerConfig {
+  driver: 'log';
 }
 ```
+
+See [Log Transport](/docs/log-transport) for details.
 
 ## Template Config (`TemplateConfig`)
 

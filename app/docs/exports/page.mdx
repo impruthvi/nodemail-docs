@@ -33,6 +33,11 @@ Everything exported from `laramail` (`src/index.ts`):
 | `MarkdownMailable` | Abstract mailable with markdown support |
 | `MailFake` | Fake mail provider for testing |
 | `AssertableMessage` | Message wrapper with assertion helpers |
+| `NodeMailError` | Base error class for all laramail errors |
+| `ConfigurationError` | Thrown for missing/invalid config or dependencies |
+| `ValidationError` | Thrown for invalid user input (has `.field` property) |
+| `ProviderError` | Thrown for runtime provider failures (has `.provider` property) |
+| `AllProvidersFailedError` | Thrown when all failover providers fail (has `.attempts` array) |
 
 ## Functions
 
@@ -44,7 +49,7 @@ Everything exported from `laramail` (`src/index.ts`):
 
 | Export | Value | Description |
 |--------|-------|-------------|
-| `VERSION` | `'1.3.0'` | Package version |
+| `VERSION` | `'1.4.0'` | Package version |
 
 ## Types
 
@@ -63,7 +68,7 @@ Everything exported from `laramail` (`src/index.ts`):
 | `MailgunConfig` | Mailgun provider configuration |
 | `ResendConfig` | Resend provider configuration |
 | `PostmarkConfig` | Postmark provider configuration |
-| `MailtrapConfig` | Mailtrap provider configuration |
+| `LogConfig` | Log provider configuration |
 | `MailAddress` | Email address with optional display name |
 | `Attachment` | Email attachment definition |
 | `MailOptions` | Full mail options for sending |

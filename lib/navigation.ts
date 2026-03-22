@@ -76,6 +76,7 @@ export const NAVIGATION: NavSection[] = [
         href: "/docs/always-to",
         since: "1.3.0",
       },
+      { title: "Error Handling", href: "/docs/error-handling", since: "1.4.0" },
       { title: "Provider Failover", href: "/docs/failover" },
     ],
   },
