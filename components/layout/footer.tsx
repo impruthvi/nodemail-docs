@@ -54,7 +54,7 @@ export function Footer() {
           <div className="col-span-2 md:col-span-1">
             <Link href="/" className="flex items-center gap-2">
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-neon-indigo to-neon-cyan shadow-lg shadow-neon-indigo/20">
-                <span className="text-sm font-bold text-white">N</span>
+                <span className="text-sm font-bold text-white">L</span>
               </div>
               <span className="font-display text-lg font-semibold tracking-tight text-foreground">
                 laramail

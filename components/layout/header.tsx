@@ -56,7 +56,7 @@ export function Header() {
             {/* Logo */}
             <Link href="/" className="flex items-center gap-2 group">
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-neon-indigo to-neon-cyan shadow-lg shadow-neon-indigo/20">
-                <span className="text-sm font-bold text-white">N</span>
+                <span className="text-sm font-bold text-white">L</span>
               </div>
               <span className="hidden font-display text-lg font-semibold tracking-tight text-foreground sm:inline-block">
                 <span className="text-gradient-static">laramail</span>
