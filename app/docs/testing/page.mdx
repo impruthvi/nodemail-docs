@@ -5,6 +5,63 @@ export const metadata = {
 
 # Testing
 
+Test email sending without SMTP, without mocks, without network. `Mail.fake()` intercepts all outgoing mail and gives you assertions that read like plain English.
+
+```typescript
+beforeEach(() => Mail.fake());
+afterEach(() => Mail.restore());
+
+it('sends a welcome email on signup', async () => {
+  await registerUser({ name: 'John', email: 'john@example.com' });
+
+  Mail.assertSent(WelcomeEmail, (mail) => mail.hasTo('john@example.com'));
+});
+```
+
+## Why Mail.fake() over vi.fn() / jest.mock()
+
+Every Node.js codebase ends up with some version of this:
+
+```typescript
+jest.mock('nodemailer', () => ({
+  createTransport: jest.fn().mockReturnValue({
+    sendMail: jest.fn().mockResolvedValue({ messageId: 'test-id' }),
+  }),
+}));
+```
+
+It breaks in predictable ways:
+
+- Someone upgrades nodemailer and the mock no longer matches the real API
+- A new send call is added and the mock swallows it silently — tests still pass
+- You want to assert the right address and end up digging through `sendMail.mock.calls[0][0].to`
+- You switch providers and the entire mock layer needs to be rebuilt
+
+`Mail.fake()` intercepts at the abstraction layer, not the transport layer. Your tests don't know or care what provider you're using.
+
+```
+BEFORE                                     AFTER
+──────────────────────────────────────     ──────────────────────────────────────
+jest.mock('nodemailer', ...)               Mail.fake()
+sendMail.mock.calls[0][0].to              mail.hasTo('user@example.com')
+no assertion on Mailable class            Mail.assertSent(WelcomeEmail)
+breaks when provider changes              works with any provider
+```
+
+## `laramail/testing` subpath
+
+Import testing utilities from a dedicated subpath to keep fake mode out of your production bundle:
+
+```typescript
+import { MailFake, AssertableMessage } from 'laramail/testing';
+```
+
+Works with all TypeScript `moduleResolution` settings (`node`, `NodeNext`, `bundler`).
+
+The main `import { Mail } from 'laramail'` + `Mail.fake()` approach also works — use whichever fits your project.
+
+---
+
 ## `Mail.fake()` / `Mail.restore()`
 
 Enable fake mode to intercept all emails instead of sending them. This is the primary testing pattern:
@@ -278,4 +335,16 @@ describe('User Registration', () => {
     Mail.assertNothingSent(); // Queued, not sent
   });
 });
+```
+
+## Staging Redirect
+
+`Mail.fake()` bypasses `Mail.alwaysTo()`. Test assertions always see the **original** recipients, not the staging redirect address — even if you have `alwaysTo` configured.
+
+```typescript
+Mail.fake();
+Mail.alwaysTo('staging@example.com'); // ignored in fake mode
+
+await Mail.to('user@example.com').send(new WelcomeEmail());
+Mail.assertSent(WelcomeEmail, (m) => m.hasTo('user@example.com')); // passes
 ```

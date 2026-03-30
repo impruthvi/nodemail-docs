@@ -9,6 +9,26 @@ All notable changes to `laramail` are documented here.
 
 ---
 
+## v1.4.3
+
+**Testing subpath + docs** — `laramail/testing` subpath export and assertion reference tables.
+
+- **`laramail/testing` subpath** — import `MailFake` and `AssertableMessage` from `laramail/testing` to keep fake mode out of production bundles. Works with all TypeScript `moduleResolution` settings (`node`, `NodeNext`, `bundler`).
+- **[Testing docs](/docs/testing)** — added "Why Mail.fake() over vi.fn()" comparison, subpath import guide, and staging redirect note.
+- **README assertion tables** — replaced inline list with quick-reference tables for all assertion methods and `AssertableMessage` helpers.
+
+---
+
+## v1.4.2
+
+**Badge fixes + npm discoverability.**
+
+- Fixed README badge URLs pointing to old domain.
+- Trimmed comparison table to 8 defensible rows.
+- Added npm keywords: `email-testing`, `mail-testing`, `nodemailer-mock`, `fake-mailer`, `test-email`.
+
+---
+
 ## v1.4.1
 
 **Positioning pivot** — `Mail.fake()` is the headline.

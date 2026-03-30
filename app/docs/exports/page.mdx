@@ -5,7 +5,22 @@ export const metadata = {
 
 # Exports Reference
 
-Everything exported from `laramail` (`src/index.ts`):
+Everything exported from `laramail`. The package has two entry points:
+
+| Import | Use case |
+|--------|----------|
+| `import { ... } from 'laramail'` | Production and test code |
+| `import { ... } from 'laramail/testing'` | Test-only imports (keeps fake mode out of production bundles) |
+
+### `laramail/testing` exports
+
+| Export | Description |
+|--------|-------------|
+| `MailFake` | Fake mail provider — stores messages instead of sending |
+| `AssertableMessage` | Message wrapper with assertion helpers |
+| `SentMessage` | Type for stored fake messages |
+
+---
 
 ## Classes
 
@@ -49,7 +64,7 @@ Everything exported from `laramail` (`src/index.ts`):
 
 | Export | Value | Description |
 |--------|-------|-------------|
-| `VERSION` | `'1.4.0'` | Package version |
+| `VERSION` | `'1.4.3'` | Package version |
 
 ## Types
 
